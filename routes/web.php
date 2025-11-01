@@ -44,12 +44,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/transaksi/tarik', [TransaksiController::class, 'storeTarik'])->name('transaksi.storeTarik');
     Route::post('/penjemputan/{penjemputan}/terima', [PenjemputanController::class, 'terima'])->name('penjemputan.terima');
     Route::post('/penjemputan/{penjemputan}/tolak', [PenjemputanController::class, 'tolak'])->name('penjemputan.tolak');
-    // Rute untuk menampilkan halaman daftar tugas penjemputan
+    
+    // Rute untuk menampilkan halaman "Tugas Penjemputan" (dengan 3 Tab)
     Route::get('/tugas-penjemputan', [PenjemputanController::class, 'index'])->name('penjemputan.tugas');
 
-    // Rute untuk menandai tugas sebagai "Selesai"
+    // Rute-rute aksi (Terima, Tolak, Selesaikan)
+    Route::post('/penjemputan/{penjemputan}/terima', [PenjemputanController::class, 'terima'])->name('penjemputan.terima');
+    Route::post('/penjemputan/{penjemputan}/tolak', [PenjemputanController::class, 'tolak'])->name('penjemputan.tolak');
     Route::post('/penjemputan/{penjemputan}/selesaikan', [PenjemputanController::class, 'selesaikan'])->name('penjemputan.selesaikan');
-   
+    
+    
     // ADMIN-ONLY ROUTES
     Route::middleware('can:isAdmin')->group(function () {
         Route::get('/manajemen-nasabah', [NasabahController::class, 'showManajemen'])->name('nasabah.manajemen');
