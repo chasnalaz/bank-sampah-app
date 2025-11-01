@@ -1,0 +1,147 @@
+:root {
+    --bs-primary-rgb: 253, 126, 20; /* Warna ORANGE custom */
+    --bs-font-sans-serif: 'Poppins', sans-serif;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+#wrapper {
+    overflow-x: hidden;
+}
+
+#sidebar-wrapper {
+    min-height: 100vh;
+    width: 250px;
+    margin-left: -250px;
+    transition: margin 0.25s ease-out;
+    border-right: 1px solid #e0e0e0;
+}
+
+#sidebar-wrapper .sidebar-heading {
+    padding: 0.875rem 1.25rem;
+    font-size: 1.2rem;
+}
+
+hr.sidebar-divider {
+    margin: 0 1rem 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+#sidebar-wrapper .list-group {
+    width: 100%;
+}
+
+#page-content-wrapper {
+    min-width: 100vw;
+    background-color: #f8f9fa;
+}
+
+#wrapper.toggled #sidebar-wrapper {
+    margin-left: 0;
+}
+
+#menu-toggle {
+    cursor: pointer;
+}
+
+.list-group-item {
+    border: none;
+    padding: 1rem 1.5rem;
+    font-weight: 500;
+    color: #555;
+    white-space: nowrap;
+    font-size: 0.9rem;
+}
+
+.list-group-item:hover {
+    background-color: #f0f0f0;
+    color: #222;
+}
+
+.list-group-item.active {
+    background-color: rgb(var(--bs-primary-rgb)) !important;
+    color: white !important;
+    border: none;
+}
+
+.btn-primary {
+    --bs-btn-bg: rgb(var(--bs-primary-rgb));
+    --bs-btn-border-color: rgb(var(--bs-primary-rgb));
+    --bs-btn-hover-bg: rgb(227, 106, 0);
+    --bs-btn-hover-border-color: rgb(227, 106, 0);
+    --bs-btn-active-bg: rgb(204, 95, 0);
+    --bs-btn-active-border-color: rgb(204, 95, 0);
+    --bs-btn-disabled-bg: rgb(var(--bs-primary-rgb));
+    --bs-btn-disabled-border-color: rgb(var(--bs-primary-rgb));
+}
+
+.nasabah-info h5 {
+    font-size: 1.1rem;
+}
+
+.nasabah-info p {
+    font-size: 0.85rem;
+}
+
+@media (min-width: 768px) {
+    #sidebar-wrapper {
+        margin-left: 0;
+    }
+
+    #page-content-wrapper {
+        min-width: 0;
+        width: 100%;
+    }
+
+    #wrapper.toggled #sidebar-wrapper {
+        margin-left: -250px;
+    }
+}
+
+/* Style untuk Submenu di Sidebar */
+.sidebar-submenu {
+    padding-left: 1.5rem; /* Memberi indentasi pada submenu */
+}
+
+.sidebar-submenu .list-group-item {
+    padding: 0.75rem 1.5rem; /* Membuat padding submenu sedikit lebih kecil */
+}
+
+/* Membuat tombol aksi di tabel admin memiliki lebar yang sama */
+.btn-aksi {
+    min-width: 85px; /* Sesuaikan angka ini jika kurang pas */
+    text-align: center;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Aturan untuk Tabel Admin di Mobile
+|--------------------------------------------------------------------------
+*/
+
+/* Memaksa teks di dalam tabel responsif agar tidak turun baris */
+.table-responsive table th,
+.table-responsive table td {
+    white-space: nowrap;
+    vertical-align: middle; /* Bonus: membuat teks dan tombol sejajar di tengah */
+}
+
+/*
+|--------------------------------------------------------------------------
+| Kustomisasi Navigasi Tab/Pills
+|--------------------------------------------------------------------------
+*/
+
+/* Gaya untuk tombol/pil yang TIDAK AKTIF */
+.nav-pills .nav-link {
+    color: #333333; /* Teks berwarna gelap (bukan biru) */
+    background-color: #f0f0f0; /* Latar belakang abu-abu muda */
+}
+
+/* Gaya untuk tombol/pil yang AKTIF (sesuai ide Anda) */
+.nav-pills .nav-link.active {
+    color: #ffffff; /* Teks berwarna putih */
+    background-color: rgb(var(--bs-primary-rgb)); /* Latar belakang ORANYE */
+}
