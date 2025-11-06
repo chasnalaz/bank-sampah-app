@@ -42,17 +42,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/nasabah', [NasabahController::class, 'index'])->name('nasabah.index');
     Route::post('/transaksi/setor', [TransaksiController::class, 'storeSetor'])->name('transaksi.storeSetor');
     Route::post('/transaksi/tarik', [TransaksiController::class, 'storeTarik'])->name('transaksi.storeTarik');
-    Route::post('/penjemputan/{penjemputan}/terima', [PenjemputanController::class, 'terima'])->name('penjemputan.terima');
-    Route::post('/penjemputan/{penjemputan}/tolak', [PenjemputanController::class, 'tolak'])->name('penjemputan.tolak');
-    
+
     // Rute untuk menampilkan halaman "Tugas Penjemputan" (dengan 3 Tab)
     Route::get('/tugas-penjemputan', [PenjemputanController::class, 'index'])->name('penjemputan.tugas');
 
-    // Rute-rute aksi (Terima, Tolak, Selesaikan)
+    // Rute-rute aksi penjemputan
     Route::post('/penjemputan/{penjemputan}/terima', [PenjemputanController::class, 'terima'])->name('penjemputan.terima');
-    Route::post('/penjemputan/{penjemputan}/tolak', [PenjemputanController::class, 'tolak'])->name('penjemputan.tolak');
     Route::post('/penjemputan/{penjemputan}/selesaikan', [PenjemputanController::class, 'selesaikan'])->name('penjemputan.selesaikan');
-    
+    Route::post('/penjemputan/{penjemputan}/batalkan', [PenjemputanController::class, 'batalkan'])->name('penjemputan.batalkan');
     
     // ADMIN-ONLY ROUTES
     Route::middleware('can:isAdmin')->group(function () {
@@ -61,17 +58,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/manajemen-nasabah/{nasabah}', [NasabahController::class, 'update'])->name('nasabah.update');
         Route::delete('/manajemen-nasabah/{nasabah}', [NasabahController::class, 'destroy'])->name('nasabah.destroy');
 
-        // PINDAHKAN SEMUA RUTE SAMPAH KE SINI
+        // RUTE MANAJEMEN SAMPAH
         Route::get('/manajemen-sampah', [JenisSampahController::class, 'index'])->name('sampah.manajemen');
         Route::post('/manajemen-sampah', [JenisSampahController::class, 'store'])->name('sampah.store');
         Route::put('/manajemen-sampah/{jenisSampah}', [JenisSampahController::class, 'update'])->name('sampah.update');
         Route::delete('/manajemen-sampah/{jenisSampah}', [JenisSampahController::class, 'destroy'])->name('sampah.destroy');
         
-        // PINDAHKAN SEMUA RUTE PETUGAS KE SINI
+        // RUTE MANAJEMEN PETUGAS
         Route::get('/manajemen-petugas', [PetugasController::class, 'index'])->name('petugas.manajemen');
         Route::post('/manajemen-petugas', [PetugasController::class, 'store'])->name('petugas.store');
         Route::put('/manajemen-petugas/{user}', [PetugasController::class, 'update'])->name('petugas.update');
         Route::delete('/manajemen-petugas/{user}', [PetugasController::class, 'destroy'])->name('petugas.destroy');
+        
+        // RUTE MONITORING PENJEMPUTAN ADMIN
+        Route::get('/admin/monitoring-penjemputan', [PenjemputanController::class, 'adminIndex'])
+            ->name('admin.penjemputan.index');
+
+        Route::post('/admin/penjemputan/{penjemputan}/assign', [PenjemputanController::class, 'adminAssign'])
+            ->name('admin.penjemputan.assign');
+            
+        Route::delete('/admin/penjemputan/{penjemputan}/destroy', [PenjemputanController::class, 'adminDestroy'])
+            ->name('admin.penjemputan.destroy');
         });
     });
 

@@ -12,6 +12,7 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    @stack('styles')
 </head>
 <body>
     <div class="d-flex" id="wrapper">
@@ -48,9 +49,22 @@
                     </div>
                 @endcan
 
-                <a href="{{ route('penjemputan.tugas') }}" class="list-group-item list-group-item-action {{ request()->routeIs('penjemputan.tugas') ? 'active' : '' }}">
-                    <i class="bi bi-truck me-2"></i> Tugas Penjemputan
-                </a>
+                {{-- =========== BLOK PERUBAHAN ANDA DIMULAI DI SINI =========== --}}
+                @can('isAdmin')
+                    {{-- TAMPILAN MENU UNTUK ADMIN --}}
+                    <a href="{{ route('admin.penjemputan.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('admin.penjemputan.index') ? 'active' : '' }}">
+                        <i class="bi bi-truck me-2"></i> {{-- <-- IKON SUDAH DIGANTI --}}
+                        <span>Penjemputan Sampah</span>
+                    </a>
+                @else
+                    {{-- TAMPILAN MENU UNTUK PETUGAS --}}
+                    <a href="{{ route('penjemputan.tugas') }}" class="list-group-item list-group-item-action {{ request()->routeIs('penjemputan.tugas') ? 'active' : '' }}">
+                        <i class="bi bi-truck me-2"></i>
+                        <span>Tugas Penjemputan</span>
+                    </a>
+                @endcan
+                {{-- =========== BLOK PERUBAHAN ANDA SELESAI DI SINI =========== --}}
+
             </div>
         </aside>
 

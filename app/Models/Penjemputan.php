@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 
 class Penjemputan extends Model
 {
@@ -37,5 +38,12 @@ class Penjemputan extends Model
     public function jenisSampah()
     {
         return $this->belongsTo(JenisSampah::class);
+    }
+
+    public function petugas()
+    {
+        // Asumsi: 'petugas_id' di tabel penjemputans
+        // merujuk ke 'id' di tabel users.
+        return $this->belongsTo(User::class, 'petugas_id');
     }
 }

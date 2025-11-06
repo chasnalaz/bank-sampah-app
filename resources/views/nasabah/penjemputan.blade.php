@@ -20,7 +20,18 @@
             <div class="list-group-item">
                 <div class="d-flex w-100 justify-content-between">
                     <h6 class="mb-1">{{ \Carbon\Carbon::parse($permintaan->usulan_tanggal)->translatedFormat('d F Y') }}</h6>
-                    <span class="badge bg-info-subtle text-info-emphasis">{{ $permintaan->status }}</span>
+                    
+                    {{-- === BLOK YANG DIPERBARUI === --}}
+                    @if ($permintaan->status == 'Selesai')
+                        <span class="badge bg-success-subtle text-success-emphasis">Selesai</span>
+                    @elseif ($permintaan->status == 'Diterima')
+                        <span class="badge bg-info-subtle text-info-emphasis">Sedang Diproses</span>
+                    @else
+                        {{-- Default untuk 'Menunggu Konfirmasi' --}}
+                        <span class="badge bg-warning-subtle text-warning-emphasis">Menunggu Konfirmasi</span>
+                    @endif
+                    {{-- === AKHIR BLOK === --}}
+
                 </div>
                 <p class="mb-1 small text-muted">{{ $permintaan->alamat_penjemputan }}</p>
             </div>
