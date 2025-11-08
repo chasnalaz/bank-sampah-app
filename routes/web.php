@@ -10,6 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NasabahLoginController;
 use App\Http\Controllers\NasabahDashboardController;
 use App\Http\Controllers\PenjemputanController;
+use App\Http\Controllers\PublicPageController;
 
 
 /*
@@ -20,9 +21,13 @@ use App\Http\Controllers\PenjemputanController;
 */
 
 // Halaman utama (welcome/login) - Biarkan di luar
+//Route::get('/', function () {
+  //  return view('welcome');
+// })->name('public.beranda'); // Kita beri nama rute agar bisa dipanggil di Navbar
+
 Route::get('/', function () {
-    return redirect()->route('login');
-});
+    return view('public.beranda'); // Kita akan gunakan view 'public/beranda.blade.php'
+})->name('public.beranda');
 
 // SEMUA RUTE YANG PERLU LOGIN MASUK KE DALAM GRUP INI
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -81,7 +86,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('admin.penjemputan.destroy');
         });
     });
-
+        Route::get('/nasabah/register', [NasabahLoginController::class, 'showRegistrationForm'])->name('nasabah.register');
+        Route::post('/nasabah/register', [NasabahLoginController::class, 'storeRegistration'])->name('nasabah.register.store');
         Route::get('/nasabah/login', [NasabahLoginController::class, 'showLoginForm'])->name('nasabah.login');
         Route::post('/nasabah/login', [NasabahLoginController::class, 'login'])->name('nasabah.login.store');
         Route::post('/nasabah/logout', [NasabahLoginController::class, 'logout'])->name('nasabah.logout');

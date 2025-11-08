@@ -2,15 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Nasabah;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
+
+// --- TAMBAHAN UNTUK REGISTRASI ---
+use App\Models\Nasabah;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules;
+// ---------------------------------
 
 class NasabahLoginController extends Controller
 {
     /**
-     * Menampilkan halaman form login untuk nasabah.
+     * Menampilkan form login nasabah.
      */
     public function showLoginForm()
     {
@@ -18,45 +24,80 @@ class NasabahLoginController extends Controller
     }
 
     /**
-     * Memproses data login dari form.
+     * Menangani percobaan login nasabah (MENGGUNAKAN NOMOR TELEPON).
      */
-    public function login(Request $request)
+    public function login(Request $request): RedirectResponse
     {
-        // 1. Validasi input
+        // 1. UBAH VALIDASI: dari 'email' menjadi 'nomor_telepon'
         $credentials = $request->validate([
-            'telepon' => 'required|string',
-            'password' => 'required|string',
+            'telepon' => ['required', 'string'],
+            'password' => ['required'],
         ]);
 
-        // 2. Cari nasabah berdasarkan nomor telepon
-        $nasabah = Nasabah::where('telepon', $credentials['telepon'])->first();
-
-        // 3. Cek apakah nasabah ada & password cocok
-        if (!$nasabah || !Hash::check($credentials['password'], $nasabah->password)) {
-            // Jika gagal, kembali ke halaman login dengan pesan error
-            return back()->withErrors([
-                'telepon' => 'Nomor telepon atau password salah.',
-            ])->onlyInput('telepon');
+        // 2. UBAH ATTEMPT: dari 'email' menjadi 'nomor_telepon'
+        if (Auth::guard('nasabah')->attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+            return redirect()->intended(route('nasabah.dashboard'));
         }
 
-        // 4. Jika berhasil, LOGIN-kan nasabah menggunakan guard 'nasabah'
-            Auth::guard('nasabah')->login($nasabah);
-            $request->session()->regenerate();
-
-            // 5. Arahkan ke dashboard nasabah
-            return redirect()->intended('/nasabah/dashboard');
+        // 3. UBAH PESAN ERROR: dari 'email' menjadi 'nomor_telepon'
+        throw ValidationException::withMessages([
+            'telepon' => __('auth.failed'),
+        ]);
     }
 
     /**
-     * Proses logout nasabah.
+     * Menangani logout nasabah.
      */
-    public function logout(Request $request)
+    public function logout(Request $request): RedirectResponse
     {
-        Auth::guard('nasabah')->logout(); // Gunakan metode logout resmi
-
+        Auth::guard('nasabah')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        return redirect('/');
+    }
 
-        return redirect()->route('nasabah.login');
+
+    /**
+     * ==================================================
+     * FUNGSI UNTUK REGISTRASI NASABAH (TANPA EMAIL)
+     * ==================================================
+     */
+
+    /**
+     * Menampilkan formulir registrasi nasabah.
+     */
+    public function showRegistrationForm()
+    {
+        return view('auth.register-nasabah');
+    }
+
+    /**
+     * Menyimpan data nasabah baru (TANPA EMAIL).
+     */
+    public function storeRegistration(Request $request): RedirectResponse
+    {
+        // 1. UBAH VALIDASI: Hapus 'email'
+        $request->validate([
+            'nama' => ['required', 'string', 'max:255'],
+            'alamat' => ['required', 'string', 'max:255'],
+            'telepon' => ['required', 'string', 'max:15', 'unique:nasabahs'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ]);
+
+        // 2. UBAH CREATE: Hapus 'email'
+        $nasabah = Nasabah::create([
+            'nama' => $request->nama,
+            'alamat' => $request->alamat,
+            'telepon' => $request->telepon,
+            'password' => Hash::make($request->password),
+            'saldo' => 0,
+        ]);
+
+        // 3. Langsung login-kan nasabah
+        Auth::guard('nasabah')->login($nasabah);
+
+        // 4. Redirect ke dashboard nasabah
+        return redirect()->route('nasabah.dashboard')->with('success', 'Pendaftaran berhasil! Selamat datang.');
     }
 }

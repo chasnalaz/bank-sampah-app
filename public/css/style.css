@@ -1,3 +1,8 @@
+/* Menambahkan smooth scroll untuk one-page navigation */
+html {
+    scroll-behavior: smooth;
+}
+
 :root {
     --bs-primary-rgb: 253, 126, 20; /* Warna ORANGE custom */
     --bs-font-sans-serif: 'Poppins', sans-serif;
@@ -144,4 +149,72 @@ hr.sidebar-divider {
 .nav-pills .nav-link.active {
     color: #ffffff; /* Teks berwarna putih */
     background-color: rgb(var(--bs-primary-rgb)); /* Latar belakang ORANYE */
+}
+
+/* CSS untuk Halaman Welcome */
+body.welcome-page {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    padding: 1rem;
+}
+.welcome-container {
+    max-width: 600px;
+    background: #ffffff;
+    padding: 3rem;
+    border-radius: 1rem;
+    box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.07);
+}
+.welcome-logo {
+    max-height: 120px;
+    margin-bottom: 1.5rem;
+}
+.welcome-container h1 {
+    font-weight: 600;
+    color: #333;
+    font-size: 1.75rem;
+}
+.welcome-container p {
+    color: #666;
+    font-size: 1.05rem;
+    margin-bottom: 2rem;
+}
+.welcome-buttons .btn {
+    font-size: 1.1rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+}
+
+/* * ===================================
+ * CSS UNTUK HOMEPAGE PUBLIK
+ * =================================== 
+ */
+
+/* 1. Menambahkan smooth scroll untuk one-page navigation */
+html {
+    scroll-behavior: smooth;
+}
+
+/* 2. Memberi padding atas pada setiap section agar tidak tertutup navbar */
+.content-section {
+    padding-top: 70px; /* Sesuaikan angka ini dengan tinggi navbar Anda */
+}
+
+/* 3. REVISI UTAMA ANDA: Style untuk link navbar yang aktif */
+.navbar-nav .nav-link:hover {
+    color: #fd7e14 !important; /* Warna font orange */
+    font-weight: 600;
+}
+
+
+/* 5. Mengatur style link yang tidak aktif */
+.navbar-nav .nav-link {
+    color: #333 !important; /* Warna font hitam biasa */
+    font-weight: 500;
+    border-bottom: 3px solid transparent; /* Sediakan tempat untuk garis bawah */
+    transition: all 0.2s ease-in-out;
 }

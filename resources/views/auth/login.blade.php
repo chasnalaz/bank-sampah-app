@@ -7,7 +7,8 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
     <style>
         :root { 
             --bs-primary-rgb: 253, 126, 20; 
@@ -44,6 +45,11 @@
         .btn:focus, .btn:active {
             font-size: inherit;
         }
+
+        .toggle-password-icon {
+            cursor: pointer;
+            z-index: 100;
+        }
     </style>
 </head>
 <body>
@@ -75,7 +81,14 @@
                 </div>
                 <div class="mb-3">
                     <label for="password" class="form-label">Password</label>
-                    <input id="password" class="form-control form-control-lg" type="password" name="password" required>
+                    {{-- Gunakan position-relative --}}
+                    <div class="position-relative">
+                        <input id="password" class="form-control form-control-lg" type="password" name="password" required style="padding-right: 3rem;">
+                        {{-- Posisikan ikon di dalam input --}}
+                        <span class="position-absolute top-50 end-0 translate-middle-y me-3 toggle-password-icon" data-target="password">
+                            <i class="bi bi-eye-fill"></i>
+                        </span>
+                    </div>
                 </div>
                 <div class="d-grid mt-4">
                     {{-- 3. Tombol tetap menggunakan btn-primary yang sudah bertema oranye --}}
@@ -87,5 +100,30 @@
             </form>
         </div>
     </div>
+</body>
+</html>
+
+{{-- 4. TAMBAHKAN SEMUA SCRIPT DI BAWAH INI --}}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Script yang sama dengan form registrasi nasabah
+        document.querySelectorAll('.toggle-password-icon').forEach(icon => {
+            icon.addEventListener('click', function (e) {
+                const targetId = this.getAttribute('data-target');
+                const targetInput = document.getElementById(targetId);
+                const iconElement = this.querySelector('i');
+
+                if (targetInput.type === 'password') {
+                    targetInput.type = 'text';
+                    iconElement.classList.remove('bi-eye-fill');
+                    iconElement.classList.add('bi-eye-slash-fill');
+                } else {
+                    targetInput.type = 'password';
+                    iconElement.classList.remove('bi-eye-slash-fill');
+                    iconElement.classList.add('bi-eye-fill');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
