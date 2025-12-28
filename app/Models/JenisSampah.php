@@ -13,4 +13,10 @@ class JenisSampah extends Model
         'nama_sampah',
         'harga_per_kg',
     ];
+
+    public function tengkulaks()
+    {
+        return $this->hasMany(Tengkulak::class, 'jenis_sampah_id');
+    }
 }
+

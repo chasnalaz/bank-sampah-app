@@ -11,7 +11,7 @@ use App\Http\Controllers\NasabahLoginController;
 use App\Http\Controllers\NasabahDashboardController;
 use App\Http\Controllers\PenjemputanController;
 use App\Http\Controllers\PublicPageController;
-
+use App\Http\Controllers\TengkulakController;
 
 /*
 |--------------------------------------------------------------------------
@@ -78,13 +78,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // RUTE MONITORING PENJEMPUTAN ADMIN
         Route::get('/admin/monitoring-penjemputan', [PenjemputanController::class, 'adminIndex'])
             ->name('admin.penjemputan.index');
-
         Route::post('/admin/penjemputan/{penjemputan}/assign', [PenjemputanController::class, 'adminAssign'])
             ->name('admin.penjemputan.assign');
-            
         Route::delete('/admin/penjemputan/{penjemputan}/destroy', [PenjemputanController::class, 'adminDestroy'])
             ->name('admin.penjemputan.destroy');
+
+        // RUTE MANAJEMEN TENGKULAK
+        Route::get('/manajemen-tengkulak', [TengkulakController::class, 'index'])->name('manajemen-tengkulak.index');
+        Route::post('/manajemen-tengkulak', [TengkulakController::class, 'store'])->name('manajemen-tengkulak.store');
+        Route::put('/manajemen-tengkulak/{id}', [TengkulakController::class, 'update'])->name('manajemen-tengkulak.update');
+        Route::delete('/manajemen-tengkulak/{id}', [TengkulakController::class, 'destroy'])->name('manajemen-tengkulak.destroy');
+
         });
+
     });
         Route::get('/nasabah/register', [NasabahLoginController::class, 'showRegistrationForm'])->name('nasabah.register');
         Route::post('/nasabah/register', [NasabahLoginController::class, 'storeRegistration'])->name('nasabah.register.store');

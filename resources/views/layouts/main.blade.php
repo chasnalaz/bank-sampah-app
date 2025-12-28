@@ -34,16 +34,19 @@
                         <div><i class="bi bi-folder2-open me-2"></i> Kelola Data</div>
                         <i class="bi bi-chevron-down"></i>
                     </a>
-                    <div class="collapse {{ request()->routeIs(['nasabah.manajemen*', 'sampah.manajemen*', 'petugas.manajemen*']) ? 'show' : '' }}" id="kelolaDataSubmenu">
+                    <div class="collapse {{ request()->routeIs(['nasabah.manajemen*', 'sampah.manajemen*', 'petugas.manajemen*', 'manajemen-tengkulak.index*']) ? 'show' : '' }}" id="kelolaDataSubmenu">
                         <div class="sidebar-submenu">
                             <a href="{{ route('nasabah.manajemen') }}" class="list-group-item list-group-item-action {{ request()->routeIs('nasabah.manajemen*') ? 'active' : '' }}">
                                 <i class="bi bi-people me-2"></i> Data Nasabah
                             </a>
                             <a href="{{ route('sampah.manajemen') }}" class="list-group-item list-group-item-action {{ request()->routeIs('sampah.manajemen*') ? 'active' : '' }}">
-                                <i class="bi bi-box-seam me-2"></i> Manajemen Sampah
+                                <i class="bi bi-trash3 me-2"></i> Data Sampah
                             </a>
                             <a href="{{ route('petugas.manajemen') }}" class="list-group-item list-group-item-action {{ request()->routeIs('petugas.manajemen*') ? 'active' : '' }}">
                                 <i class="bi bi-person-badge me-2"></i> Data Petugas
+                            </a>
+                            <a href="{{ route('manajemen-tengkulak.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('manajemen-tengkulak.index*') ? 'active' : '' }}">
+                                <i class="bi bi-truck me-2"></i> Data Tengkulak
                             </a>
                         </div>
                     </div>
@@ -53,7 +56,7 @@
                 @can('isAdmin')
                     {{-- TAMPILAN MENU UNTUK ADMIN --}}
                     <a href="{{ route('admin.penjemputan.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('admin.penjemputan.index') ? 'active' : '' }}">
-                        <i class="bi bi-truck me-2"></i> {{-- <-- IKON SUDAH DIGANTI --}}
+                        <i class="bi bi-basket me-2"></i> {{-- <-- IKON SUDAH DIGANTI --}}
                         <span>Penjemputan Sampah</span>
                     </a>
                 @else
