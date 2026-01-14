@@ -5,9 +5,11 @@
 @section('content')
 <div class="container">
     <div class="d-flex justify-content-end align-items-center mb-3">
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahModal">
-            <i class="bi bi-plus-circle me-2"></i> Tambah Data Tengkulak
-        </button>
+        @can('isAdmin')
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahModal">
+                <i class="bi bi-plus-circle me-2"></i> Tambah Data Tengkulak
+            </button>
+        @endcan
     </div>
 
     @if (session('success'))
@@ -27,7 +29,9 @@
                             <th>Jenis Sampah</th>
                             <th>Harga Beli</th>
                             <th>Kontak</th>
-                            <th>Aksi</th>
+                            @can('isAdmin')
+                                <th>Aksi</th>
+                            @endcan
                         </tr>
                     </thead>
                     <tbody>
@@ -37,24 +41,26 @@
                                 <td>{{ $tengkulak->jenisSampah->nama_sampah }}</td>
                                 <td>Rp {{ number_format($tengkulak->harga_beli, 0, ',', '.') }}</td>
                                 <td>{{ $tengkulak->kontak ?? '-' }}</td>
-                                <td>
-                                    <div class="btn-group" role="group">
-                                        <button type="button" class="btn btn-sm btn-warning btn-aksi" 
-                                                data-bs-toggle="modal" data-bs-target="#editModal"
-                                                data-id="{{ $tengkulak->id }}"
-                                                data-nama="{{ $tengkulak->nama_tengkulak }}"
-                                                data-sampah="{{ $tengkulak->jenis_sampah_id }}"
-                                                data-harga="{{ $tengkulak->harga_beli }}"
-                                                data-kontak="{{ $tengkulak->kontak }}">
-                                            <i class="bi bi-pencil-square"></i> Edit
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-danger btn-aksi" 
-                                                data-bs-toggle="modal" data-bs-target="#hapusModal"
-                                                data-id="{{ $tengkulak->id }}">
-                                            <i class="bi bi-trash3"></i> Hapus
-                                        </button>
-                                    </div>
-                                </td>
+                                @can('isAdmin')
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-warning btn-aksi" 
+                                                    data-bs-toggle="modal" data-bs-target="#editModal"
+                                                    data-id="{{ $tengkulak->id }}"
+                                                    data-nama="{{ $tengkulak->nama_tengkulak }}"
+                                                    data-sampah="{{ $tengkulak->jenis_sampah_id }}"
+                                                    data-harga="{{ $tengkulak->harga_beli }}"
+                                                    data-kontak="{{ $tengkulak->kontak }}">
+                                                <i class="bi bi-pencil-square"></i> Edit
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-danger btn-aksi" 
+                                                    data-bs-toggle="modal" data-bs-target="#hapusModal"
+                                                    data-id="{{ $tengkulak->id }}">
+                                                <i class="bi bi-trash3"></i> Hapus
+                                            </button>
+                                        </div>
+                                    </td>
+                                @endcan
                             </tr>
                         @empty
                             <tr>

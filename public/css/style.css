@@ -218,3 +218,9 @@ html {
     border-bottom: 3px solid transparent; /* Sediakan tempat untuk garis bawah */
     transition: all 0.2s ease-in-out;
 }
+
+/* Custom CSS untuk Border Left ala Dashboard */
+.border-left-primary { border-left: 0.25rem solid #4e73df !important; }
+.border-left-success { border-left: 0.25rem solid #1cc88a !important; }
+.border-left-danger { border-left: 0.25rem solid #e74a3b !important; }
+.border-left-warning { border-left: 0.25rem solid #f6c23e !important; }

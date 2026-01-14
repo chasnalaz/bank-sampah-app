@@ -3,39 +3,76 @@
 namespace App\Http\Controllers;
 
 use App\Models\Nasabah;
-use App\Models\Transaksi; // <-- TAMBAHKAN INI
+use App\Models\Transaksi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Penjemputan;
 use App\Models\JenisSampah;
+use App\Models\Edukasi;
+use App\Models\Pengaturan;
+use Carbon\Carbon; // Pastikan import Carbon di sini
 
 class NasabahDashboardController extends Controller
 {
+    // --- HALAMAN BERANDA (DASHBOARD) ---
     public function index()
     {
-        // Ambil data nasabah yang sedang login
         $nasabah = Auth::guard('nasabah')->user();
 
-        // Ambil riwayat transaksi milik nasabah tersebut, urutkan dari yang paling baru
+        // 1. Ambil Riwayat Transaksi (Limit 5)
         $riwayatTransaksi = Transaksi::where('nasabah_id', $nasabah->id)
-                                    ->latest() // Mengurutkan berdasarkan 'created_at' dari terbaru
-                                    ->paginate(10); // Mengambil 10 transaksi per halaman
+                                    ->latest()
+                                    ->take(5) 
+                                    ->get();
 
-        // Kirim data nasabah dan riwayat transaksinya ke view
-        return view('nasabah.dashboard', [
-            'nasabah' => $nasabah,
-            'riwayatTransaksi' => $riwayatTransaksi
-        ]);
+        // 2. Ambil Edukasi (Limit 3)
+        $edukasiList = Edukasi::latest()->take(3)->get();
+        
+        // 3. Ambil Jadwal Operasional (String dari Database)
+        // Kita pakai nama variabel $jamBuka (String) agar sesuai dengan View
+        $tglBuka  = Pengaturan::where('key', 'tanggal_buka')->value('value');
+        $jamBuka  = Pengaturan::where('key', 'jam_buka')->value('value') ?? '08:00';
+        $jamTutup = Pengaturan::where('key', 'jam_tutup')->value('value') ?? '16:00';
+
+        // 4. LOGIKA STATUS BUKA/TUTUP (Menggunakan Carbon)
+        $sekarang = Carbon::now('Asia/Jakarta');
+        $isHariH  = ($tglBuka == $sekarang->format('Y-m-d'));
+
+        // Buat objek Carbon UNTUK LOGIKA (Pakai nama beda biar $jamBuka string tidak tertimpa)
+        $waktuBuka  = Carbon::createFromTimeString($jamBuka, 'Asia/Jakarta');
+        $waktuTutup = Carbon::createFromTimeString($jamTutup, 'Asia/Jakarta');
+        
+        // Cek Logic
+        $isJamKerja = $sekarang->between($waktuBuka, $waktuTutup);
+        $sedangBuka = $isHariH && $isJamKerja; 
+
+        return view('nasabah.dashboard', compact(
+            'nasabah', 
+            'riwayatTransaksi', 
+            'edukasiList',
+            'tglBuka', 
+            'jamBuka',   // <-- Sudah dikembalikan jadi $jamBuka (String)
+            'jamTutup',  // <-- Sudah dikembalikan jadi $jamTutup (String)
+            'sedangBuka'
+        ));
     }
 
-   public function showPenjemputan()
+    // --- HALAMAN RIWAYAT ---
+    public function riwayat()
     {
         $nasabah = Auth::guard('nasabah')->user();
-        
-        // Ambil data untuk dropdown form
+        $semuaTransaksi = Transaksi::where('nasabah_id', $nasabah->id)
+                                   ->latest()
+                                   ->paginate(15); 
+
+        return view('nasabah.riwayat', compact('nasabah', 'semuaTransaksi'));
+    }
+
+    // --- HALAMAN PENJEMPUTAN ---
+    public function showPenjemputan()
+    {
+        $nasabah = Auth::guard('nasabah')->user();
         $jenisSampahList = JenisSampah::orderBy('nama_sampah', 'asc')->get();
-        
-        // Ambil riwayat penjemputan milik nasabah ini
         $riwayatPenjemputan = Penjemputan::where('nasabah_id', $nasabah->id)
                                     ->latest()
                                     ->get();
@@ -43,7 +80,7 @@ class NasabahDashboardController extends Controller
         return view('nasabah.penjemputan', [
             'nasabah' => $nasabah,
             'riwayatPenjemputan' => $riwayatPenjemputan,
-            'jenisSampahList' => $jenisSampahList, // Kirim data sampah ke view
+            'jenisSampahList' => $jenisSampahList,
         ]);
     }
 

@@ -16,11 +16,11 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Nama</th>
-                        <th>Alamat</th>
-                        <th>Telepon</th>
-                        <th>Saldo</th>
-                        <th>Aksi</th>
+                        <th class="text-center">Nama</th>
+                        <th class="text-center">Alamat</th>
+                        <th class="text-center">Telepon</th>
+                        <th class="text-center">Saldo</th>
+                        <th class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -30,23 +30,33 @@
                             <td>{{ $nasabah->alamat }}</td>
                             <td>{{ $nasabah->telepon }}</td>
                             <td>Rp {{ number_format($nasabah->saldo, 0, ',', '.') }}</td>
-                            <td>
+                            <td class="text-center">
                                 <div class="btn-group" role="group">
-                                <button type="button" class="btn btn-sm btn-warning btn-aksi" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#editModal"
-                                        data-id="{{ $nasabah->id }}"
-                                        data-nama="{{ $nasabah->nama }}"
-                                        data-alamat="{{ $nasabah->alamat }}"
-                                        data-telepon="{{ $nasabah->telepon }}">
-                                    <i class="bi bi-pencil-square"></i> Edit
-                                </button>
-                                <button type="button" class="btn btn-sm btn-danger btn-aksi" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#hapusModal"
-                                        data-id="{{ $nasabah->id }}">
-                                    <i class="bi bi-trash3"></i> Hapus
-                                </button>
+                                    {{-- TOMBOL DETAIL (BARU) --}}
+                                    <a href="{{ route('nasabah.show', $nasabah->id) }}" class="btn btn-sm btn-info text-white">
+                                        <i class="bi bi-eye-fill"></i> Detail
+                                    </a>
+                                    
+                                    @can('isAdmin')
+                                    {{-- TOMBOL EDIT --}}
+                                    <button type="button" class="btn btn-sm btn-warning btn-aksi" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editModal"
+                                            data-id="{{ $nasabah->id }}"
+                                            data-nama="{{ $nasabah->nama }}"
+                                            data-alamat="{{ $nasabah->alamat }}"
+                                            data-telepon="{{ $nasabah->telepon }}">
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                    </button>
+
+                                    {{-- TOMBOL HAPUS --}}
+                                    <button type="button" class="btn btn-sm btn-danger btn-aksi" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#hapusModal"
+                                            data-id="{{ $nasabah->id }}">
+                                        <i class="bi bi-trash3"></i> Hapus
+                                    </button>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>

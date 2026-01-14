@@ -26,6 +26,22 @@
             box-shadow: none;
             padding-bottom: 80px; /* Memberi ruang untuk navbar bawah */
         }
+        <style>
+        /* ... CSS yang sudah ada ... */
+
+        /* TAMBAHAN BARU: Mencegah Layar Geser (Layout Shift) */
+        html {
+            overflow-y: scroll; /* Selalu tampilkan track scrollbar vertikal */
+        }
+        
+        body {
+            /* Pastikan tidak ada margin aneh dari browser */
+            margin: 0; 
+            padding: 0;
+            padding-bottom: 80px; /* Space untuk bottom nav */
+        }
+
+        /* ... Lanjut CSS bottom-nav dll ... */
         /* CSS untuk Navbar Bawah */
         .bottom-nav {
             max-width: 450px;
@@ -47,6 +63,23 @@
             --bs-btn-active-bg: rgb(204, 95, 0);
             --bs-btn-active-border-color: rgb(204, 95, 0);
         }
+        /* Tambahkan ini di dalam tag <style> */
+        body {
+            /* Mencegah teks diblok/seleksi biru */
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10 and IE 11 */
+            user-select: none; /* Standard syntax */
+            
+            /* Mengubah kursor jadi panah biasa (bukan garis tulis I) */
+            cursor: default;
+        }
+
+        /* KECUALI input form, harus tetap bisa diketik/diblok */
+        input, textarea {
+            -webkit-user-select: text;
+            user-select: text;
+            cursor: text;
+        }
     </style>
 </head>
 <body>
@@ -63,7 +96,7 @@
                 <i class="bi bi-house-door-fill fs-4"></i>
                 <div class="small">Beranda</div>
             </a>
-            <a href="#" class="nav-link text-center">
+            <a href="{{ route('nasabah.riwayat') }}" class="nav-link text-center {{ request()->routeIs('nasabah.riwayat') ? 'active' : '' }}">
                 <i class="bi bi-clock-history fs-4"></i>
                 <div class="small">Riwayat</div>
             </a>
@@ -71,8 +104,7 @@
                 <i class="bi bi-truck fs-4"></i>
                 <div class="small">Penjemputan</div>
             </a>
-            <a href="#" class="nav-link text-center">
-                <i class="bi bi-person-fill fs-4"></i>
+            <a href="{{ route('nasabah.profil') }}" class="nav-link text-center {{ request()->routeIs('nasabah.profil') ? 'active' : '' }}">                <i class="bi bi-person-fill fs-4"></i>
                 <div class="small">Akun</div>
             </a>
         </div>

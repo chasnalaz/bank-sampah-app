@@ -5,37 +5,65 @@ namespace App\Http\Controllers;
 use App\Models\Penjemputan;
 use App\Models\JenisSampah;
 use App\Models\Transaksi;
-use App\Models\User; // <-- Pastikan User di-import
+use App\Models\User;
+use App\Models\Pengaturan; // <--- WAJIB: Import Model Pengaturan
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon; // <--- WAJIB: Import Carbon
 use Exception;
 
 class PenjemputanController extends Controller
 {
-    /**
-     * ====================================================================
-     * FUNGSI UNTUK PETUGAS
-     * ====================================================================
-     */
+    // --- METHOD HELPER (PRIVATE) UNTUK CEK JADWAL ---
+    private function cekJadwalOperasional()
+    {
+        // 1. Ambil Data Jadwal
+        $tanggalBuka = Pengaturan::where('key', 'tanggal_buka')->value('value');
+        $jamBuka     = Pengaturan::where('key', 'jam_buka')->value('value') ?? '08:00';
+        $jamTutup    = Pengaturan::where('key', 'jam_tutup')->value('value') ?? '16:00';
 
-    /**
-     * Aksi untuk MENGAMBIL (CLAIM) permintaan penjemputan.
-     */
+        // 2. Cek Tanggal
+        $hariIni = Carbon::now()->format('Y-m-d');
+        if (!$tanggalBuka || $hariIni != $tanggalBuka) {
+            $infoTanggal = $tanggalBuka ? Carbon::parse($tanggalBuka)->translatedFormat('d F Y') : 'Belum Diatur';
+            return "AKSI DITOLAK! Bank Sampah sedang tutup. Jadwal buka berikutnya: " . $infoTanggal;
+        }
+
+        // 3. Cek Jam
+        $sekarang   = Carbon::now();
+        $waktuBuka  = Carbon::createFromTimeString($jamBuka);
+        $waktuTutup = Carbon::createFromTimeString($jamTutup);
+
+        if (!$sekarang->between($waktuBuka, $waktuTutup)) {
+            return "AKSI DITOLAK! Jam operasional hari ini hanya pukul $jamBuka - $jamTutup WIB.";
+        }
+
+        return null; // Aman (Buka)
+    }
+
+    // --- METHOD PETUGAS: TERIMA TUGAS ---
     public function terima(Penjemputan $penjemputan)
     {
+        // 1. CEK SATPAM DULU!
+        $errorJadwal = $this->cekJadwalOperasional();
+        if ($errorJadwal) {
+            return back()->with('error', $errorJadwal);
+        }
+
+        // 2. Cek Validasi Lain
         if ($penjemputan->petugas_id !== null) {
             return back()->with('error', 'Tugas ini sudah diambil oleh petugas lain.');
         }
+
+        // 3. Eksekusi
         $penjemputan->petugas_id = Auth::id();
         $penjemputan->status = 'Diterima';
         $penjemputan->save();
+
         return redirect()->route('penjemputan.tugas')->with('success', 'Anda berhasil mengambil tugas penjemputan ini.');
     }
 
-    /**
-     * Menampilkan halaman "Tugas Penjemputan" (dengan 3 Tab)
-     */
     public function index()
     {
         $petugasId = Auth::id();
@@ -61,8 +89,7 @@ class PenjemputanController extends Controller
                                     ->latest('updated_at')
                                     ->get();
         
-        // 4. Ambil SEMUA jenis sampah untuk modal
-        $allJenisSampah = JenisSampah::orderBy('nama_sampah', 'asc')->get(); // Menggunakan 'nama_sampah'
+        $allJenisSampah = JenisSampah::orderBy('nama_sampah', 'asc')->get();
 
         return view('tugas-penjemputan.index', [
             'permintaanBaruList' => $permintaanBaru,
@@ -72,11 +99,15 @@ class PenjemputanController extends Controller
         ]);
     }
 
-    /**
-     * Menandai permintaan sebagai "Selesai" DAN MEMBUAT TRANSAKSI.
-     */
+    // --- METHOD PETUGAS: SELESAIKAN TUGAS ---
     public function selesaikan(Request $request, Penjemputan $penjemputan)
     {
+        // 1. CEK SATPAM DULU!
+        $errorJadwal = $this->cekJadwalOperasional();
+        if ($errorJadwal) {
+            return back()->with('error', $errorJadwal);
+        }
+
         $request->validate([
             'jenis_sampah_id' => 'required|exists:jenis_sampahs,id',
             'berat_aktual' => 'required|numeric|min:0.01',
@@ -94,22 +125,26 @@ class PenjemputanController extends Controller
             $berat = $request->berat_aktual;
             $total_harga = $jenisSampah->harga_per_kg * $berat;
 
+            // Simpan ke Transaksi
             Transaksi::create([
                 'nasabah_id' => $nasabah->id,
-                'petugas_id' => Auth::id(),
+                'petugas_id' => Auth::id(), // Pastikan kolom ini ada di tabel transaksi
                 'jenis_transaksi' => 'setor',
-                'jenis_sampah_id' => $jenisSampah->id,
-                'berat_kg' => $berat,
+                'jenis_sampah' => $jenisSampah->nama_sampah, // Sesuaikan dg kolom di tabel (nama atau id)
+                'berat' => $berat,
                 'total_harga' => $total_harga,
                 'tanggal_transaksi' => now(), 
             ]);
 
+            // Update Saldo
             $nasabah->saldo += $total_harga;
             $nasabah->save();
 
+            // Update Status Penjemputan
             $penjemputan->status = 'Selesai';
-            $penjemputan->jenis_sampah_id = $jenisSampah->id;
-            $penjemputan->estimasi_berat = $berat;
+            // Pastikan kolom ini ada di tabel penjemputans, kalau tidak ada hapus saja baris ini:
+            // $penjemputan->jenis_sampah_id = $jenisSampah->id; 
+            // $penjemputan->estimasi_berat = $berat;
             $penjemputan->save();
 
             DB::commit();
@@ -122,9 +157,6 @@ class PenjemputanController extends Controller
         }
     }
 
-    /**
-     * Aksi untuk MEMBATALKAN tugas yang sudah diambil.
-     */
     public function batalkan(Penjemputan $penjemputan)
     {
         if ($penjemputan->petugas_id !== Auth::id()) {
@@ -136,41 +168,33 @@ class PenjemputanController extends Controller
         return redirect()->route('penjemputan.tugas')->with('success', 'Tugas telah dibatalkan dan dikembalikan ke daftar.');
     }
 
-
-    /**
-     * ====================================================================
-     * FUNGSI UNTUK ADMIN
-     * ====================================================================
-     */
-
-    /**
-     * Menampilkan halaman monitoring penjemputan untuk Admin.
-     */
+    // --- METHOD ADMIN ---
     public function adminIndex()
     {
-        // 1. Data "Permintaan Baru" (Unclaimed)
         $permintaanBaru = Penjemputan::whereNull('petugas_id')
                                 ->where('status', 'Menunggu Konfirmasi')
                                 ->with('nasabah', 'jenisSampah')
                                 ->latest('usulan_tanggal')
                                 ->get();
                                 
-        // 2. Data "Tugas Berlangsung" (Claimed & Diterima)
         $tugasBerlangsung = Penjemputan::where('status', 'Diterima')
                                     ->whereNotNull('petugas_id')
                                     ->with('nasabah', 'jenisSampah', 'petugas') 
                                     ->latest('usulan_tanggal')
                                     ->get();
 
-        // 3. Data "Riwayat Tugas" (Hanya Selesai)
         $riwayatTugas = Penjemputan::where('status', 'Selesai')
                                     ->whereNotNull('petugas_id')
                                     ->with('nasabah', 'petugas')
                                     ->latest('updated_at')
                                     ->get();
         
-        // 4. Ambil daftar petugas untuk modal "Tugaskan"
-        $daftarPetugas = User::where('role', 'petugas')->orderBy('name', 'asc')->get();
+        // Cukup ambil petugas yang SIAP hari ini
+        $daftarPetugas = User::where('role', 'petugas')
+                             ->where('status_tugas', 'siap')
+                             ->whereDate('updated_at', Carbon::today()) // Tambahan filter expired
+                             ->orderBy('name', 'asc')
+                             ->get();
 
         return view('admin.penjemputan.index', [
             'permintaanBaruList' => $permintaanBaru,
@@ -180,9 +204,6 @@ class PenjemputanController extends Controller
         ]);
     }
 
-    /**
-     * [BARU] Menugaskan petugas secara paksa (Admin Override).
-     */
     public function adminAssign(Request $request, Penjemputan $penjemputan)
     {
         $request->validate([
@@ -200,16 +221,12 @@ class PenjemputanController extends Controller
         return back()->with('success', 'Petugas berhasil ditugaskan.');
     }
 
-    /**
-     * [BARU] Menghapus permintaan penjemputan (misal: spam).
-     */
     public function adminDestroy(Penjemputan $penjemputan)
     {
         try {
             if ($penjemputan->status == 'Selesai') {
                 return back()->with('error', 'Tidak dapat menghapus tugas yang sudah selesai.');
             }
-            
             $penjemputan->delete();
             return back()->with('success', 'Permintaan penjemputan telah dihapus.');
 

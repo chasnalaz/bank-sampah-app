@@ -1,119 +1,171 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
 use App\Models\Transaksi;
-use App\Models\Nasabah; // Mungkin sudah ada
+use App\Models\Nasabah; 
 use App\Models\JenisSampah;
-use Illuminate\Support\Facades\DB; // Untuk transaksi database yang aman
+use App\Models\Pengaturan; // <--- TAMBAHAN: Untuk ambil jadwal
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon; // <--- TAMBAHAN: Untuk olah waktu
 
 class TransaksiController extends Controller
 {
+    // --- METHOD HELPER (PRIVATE) UNTUK CEK JADWAL ---
+    // Kita buat fungsi sendiri biar kodingan storeSetor & storeTarik tidak kepanjangan
+    private function cekJadwalOperasional()
+    {
+        // 1. Ambil Data dari Database
+        $tanggalBuka = Pengaturan::where('key', 'tanggal_buka')->value('value');
+        $jamBuka     = Pengaturan::where('key', 'jam_buka')->value('value') ?? '08:00';
+        $jamTutup    = Pengaturan::where('key', 'jam_tutup')->value('value') ?? '16:00';
+
+        // 2. Cek Tanggal (Apakah Hari Ini == Tanggal Jadwal?)
+        $hariIni = Carbon::now()->format('Y-m-d');
+        if (!$tanggalBuka || $hariIni != $tanggalBuka) {
+            $infoTanggal = $tanggalBuka ? Carbon::parse($tanggalBuka)->translatedFormat('d F Y') : 'Belum Diatur';
+            return "Maaf, Transaksi DITOLAK! Bank Sampah tutup hari ini. Jadwal buka: " . $infoTanggal;
+        }
+
+        // 3. Cek Jam (Apakah Jam Sekarang di antara Buka & Tutup?)
+        $sekarang   = Carbon::now();
+        $waktuBuka  = Carbon::createFromTimeString($jamBuka);
+        $waktuTutup = Carbon::createFromTimeString($jamTutup);
+
+        if (!$sekarang->between($waktuBuka, $waktuTutup)) {
+            return "Maaf, Bank Sampah tutup. Jam operasional hari ini: $jamBuka - $jamTutup WIB";
+        }
+
+        return null; // Null artinya "Aman/Buka"
+    }
+
+    // Method untuk menampilkan halaman utama transaksi (Daftar Nasabah & Modal)
+    public function index()
+    {
+        // 1. Ambil Semua Nasabah (Bisa pakai pagination kalau data banyak)
+        $nasabahList = Nasabah::all(); 
+
+        // 2. Ambil Semua Jenis Sampah (Untuk isi dropdown di Modal Setor)
+        $jenisSampahList = JenisSampah::all();
+
+        // 3. Tampilkan View
+        return view('nasabah.index', compact('nasabahList', 'jenisSampahList'));
+    }
     // Method untuk halaman "Pilih Transaksi"
     public function pilih($nasabahId)
     {
-        // Nanti kita cari nasabah dari database berdasarkan $nasabahId
-        // Untuk sekarang kita buat data dummy lagi
-        $nasabah = (object)['id' => $nasabahId, 'nama' => 'Budi Santoso', 'saldo' => 50000];
+        $nasabah = Nasabah::findOrFail($nasabahId);
         return view('transaksi.pilih', ['nasabah' => $nasabah]);
     }
 
     // Method untuk menampilkan form SETOR
     public function createSetor($nasabahId)
     {
-        $nasabah = (object)['id' => $nasabahId, 'nama' => 'Budi Santoso', 'saldo' => 50000];
+        $nasabah = Nasabah::findOrFail($nasabahId);
         return view('transaksi.setor', ['nasabah' => $nasabah]);
     }
     
     // Method untuk menampilkan form TARIK
     public function createTarik($nasabahId)
     {
-        $nasabah = (object)['id' => $nasabahId, 'nama' => 'Budi Santoso', 'saldo' => 50000];
+        $nasabah = Nasabah::findOrFail($nasabahId);
         return view('transaksi.tarik', ['nasabah' => $nasabah]);
     }
 
-    // ... (method lainnya yang sudah ada)
-
-// Method untuk MEMPROSES data dari form setor
-
-
-public function storeSetor(Request $request)
-{
-    // 1. Validasi Input (tidak berubah)
-    $validated = $request->validate([
-        'nasabah_id' => 'required|exists:nasabahs,id',
-        'tanggal_setor' => 'required|date',
-        'jenis_sampah' => 'required|string',
-        'berat' => 'required|numeric|min:0.1',
-    ]);
-
-    // 2. Cari data sampah di DATABASE untuk mendapatkan harganya
-    $jenisSampah = JenisSampah::where('nama_sampah', $validated['jenis_sampah'])->firstOrFail();
-    
-    // 3. Hitung total harga menggunakan harga dari database
-    $totalHarga = $jenisSampah->harga_per_kg * $validated['berat'];
-
-    // 4. Simpan ke database menggunakan Transaction (tidak berubah)
-    DB::transaction(function () use ($validated, $totalHarga, $jenisSampah) {
-        // Simpan riwayat transaksi
-        Transaksi::create([
-            'nasabah_id' => $validated['nasabah_id'],
-            'tanggal_transaksi' => $validated['tanggal_setor'],
-            'jenis_transaksi' => 'setor',
-            'total_harga' => $totalHarga,
-            'jenis_sampah' => $jenisSampah->nama_sampah, // <-- TAMBAHKAN INI
-            'berat' => $validated['berat'],
-        ]);
-
-        // Update saldo nasabah
-        $nasabah = Nasabah::find($validated['nasabah_id']);
-        $nasabah->saldo += $totalHarga;
-        $nasabah->save();
-    });
-
-    // 5. Redirect kembali dengan pesan sukses (tidak berubah)
-    return redirect()->route('nasabah.index')->with('success', 'Transaksi setor sampah berhasil dicatat!');
-}
-
-// app/Http/Controllers/TransaksiController.php
-
-public function storeTarik(Request $request)
-{
-    // 1. Validasi Input
-    $validated = $request->validate([
-        'nasabah_id' => 'required|exists:nasabahs,id',
-        'tanggal_tarik' => 'required|date',
-        'nominal_penarikan' => 'required|numeric|min:1000',
-    ]);
-
-    // 2. Simpan ke database menggunakan Transaction
-    DB::transaction(function () use ($validated) {
-        // Ambil data nasabah
-        $nasabah = Nasabah::findOrFail($validated['nasabah_id']);
-        $nominalPenarikan = $validated['nominal_penarikan'];
-
-        // Cek apakah saldo mencukupi
-        if ($nasabah->saldo < $nominalPenarikan) {
-            // Jika tidak cukup, batalkan transaksi dan kirim error
-            throw \Illuminate\Validation\ValidationException::withMessages([
-               'nominal_penarikan' => 'Saldo nasabah tidak mencukupi untuk melakukan penarikan ini.',
-            ]);
+    // --- PROSES SETOR SAMPAH (SUDAH DITAMBAH SATPAM) ---
+    public function storeSetor(Request $request)
+    {
+        // 1. JALANKAN SATPAM DULU
+        $pesanError = $this->cekJadwalOperasional();
+        if ($pesanError) {
+            return back()->with('error', $pesanError); // Tendang balik jika tutup
         }
-        
-        // Simpan riwayat transaksi
-        Transaksi::create([
-            'nasabah_id' => $validated['nasabah_id'],
-            'tanggal_transaksi' => $validated['tanggal_tarik'],
-            'jenis_transaksi' => 'tarik',
-            'total_harga' => $nominalPenarikan,
+
+        // 2. VALIDASI INPUT
+        $validated = $request->validate([
+            'nasabah_id' => 'required|exists:nasabahs,id',
+            // 'tanggal_setor' => 'required|date',
+            'jenis_sampah' => 'required|string',
+            'berat' => 'required|numeric|min:0.1',
         ]);
 
-        // Kurangi saldo nasabah
-        $nasabah->saldo -= $nominalPenarikan;
-        $nasabah->save();
-    });
+        $jenisSampah = JenisSampah::where('nama_sampah', $validated['jenis_sampah'])->firstOrFail();
+        $totalHarga = $jenisSampah->harga_per_kg * $validated['berat'];
 
-    // 3. Redirect kembali dengan pesan sukses
-    return redirect()->route('nasabah.index')->with('success', 'Transaksi penarikan saldo berhasil dicatat!');
-}
+        // 3. SIMPAN DATA (DB TRANSACTION)
+        $transaksiBaru = DB::transaction(function () use ($validated, $totalHarga, $jenisSampah) {
+            
+            $transaksi = Transaksi::create([
+                'nasabah_id' => $validated['nasabah_id'],
+                'tanggal_transaksi' => Carbon::now(),
+                'jenis_transaksi' => 'setor',
+                'total_harga' => $totalHarga,
+                'jenis_sampah' => $jenisSampah->nama_sampah,
+                'berat' => $validated['berat'],
+            ]);
+
+            $nasabah = Nasabah::find($validated['nasabah_id']);
+            $nasabah->saldo += $totalHarga;
+            $nasabah->save();
+
+            return $transaksi;
+        });
+
+        return redirect()->route('nasabah.index')
+            ->with('success', 'Transaksi setor sampah berhasil dicatat!')
+            ->with('trx_id', $transaksiBaru->id);
+    }
+
+    // --- PROSES TARIK SALDO (SUDAH DITAMBAH SATPAM) ---
+    public function storeTarik(Request $request)
+    {
+        // 1. JALANKAN SATPAM DULU
+        $pesanError = $this->cekJadwalOperasional();
+        if ($pesanError) {
+            return back()->with('error', $pesanError); // Tendang balik jika tutup
+        }
+
+        // 2. VALIDASI INPUT
+        $validated = $request->validate([
+            'nasabah_id' => 'required|exists:nasabahs,id',
+            'tanggal_transaksi' => Carbon::now(),
+            'nominal_penarikan' => 'required|numeric|min:1000',
+        ]);
+
+        // 3. SIMPAN DATA (DB TRANSACTION)
+        $transaksiBaru = DB::transaction(function () use ($validated) {
+            $nasabah = Nasabah::findOrFail($validated['nasabah_id']);
+            $nominalPenarikan = $validated['nominal_penarikan'];
+
+            if ($nasabah->saldo < $nominalPenarikan) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                   'nominal_penarikan' => 'Saldo nasabah tidak mencukupi.',
+                ]);
+            }
+            
+            $transaksi = Transaksi::create([
+                'nasabah_id' => $validated['nasabah_id'],
+                'tanggal_transaksi' => Carbon::now(),
+                'jenis_transaksi' => 'tarik',
+                'total_harga' => $nominalPenarikan,
+            ]);
+
+            $nasabah->saldo -= $nominalPenarikan;
+            $nasabah->save();
+
+            return $transaksi;
+        });
+
+        return redirect()->route('nasabah.index')
+            ->with('success', 'Transaksi penarikan saldo berhasil dicatat!')
+            ->with('trx_id', $transaksiBaru->id);
+    }
+
+    // --- FUNGSI CETAK STRUK ---
+    public function cetakStruk($id)
+    {
+        $transaksi = Transaksi::with('nasabah')->findOrFail($id);
+        return view('admin.struk.transaksi', compact('transaksi'));
+    }
 }

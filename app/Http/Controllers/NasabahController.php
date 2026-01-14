@@ -30,6 +30,21 @@ class NasabahController extends Controller
     return view('manajemen-nasabah.index', ['nasabahList' => $semuaNasabah]);
     }
 
+    public function show($id)
+    {
+        // 1. Ambil data nasabah
+        $nasabah = Nasabah::findOrFail($id);
+
+        // 2. Ambil riwayat transaksi nasabah tersebut (urutkan terbaru)
+        // Kita pakai manual query biar aman kalau relasi di Model belum dibuat
+        $riwayatTransaksi = Transaksi::where('nasabah_id', $id)
+                                     ->orderBy('tanggal_transaksi', 'desc')
+                                     ->orderBy('created_at', 'desc')
+                                     ->get();
+
+        return view('manajemen-nasabah.show', compact('nasabah', 'riwayatTransaksi'));
+    }
+    
     public function store(Request $request)
     {
         // 1. Validasi input

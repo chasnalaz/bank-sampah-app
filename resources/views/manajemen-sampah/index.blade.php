@@ -5,13 +5,24 @@
 @section('content')
 <div class="container">
     <div class="d-flex justify-content-end align-items-center mb-3">
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahModal">
-            <i class="bi bi-plus-circle me-2"></i> Tambah Jenis Sampah
-        </button>
+        @can('isAdmin')
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahModal">
+                <i class="bi bi-plus-circle me-2"></i> Tambah Jenis Sampah
+            </button>
+        @endcan
     </div>
 
     @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
+        <div class="alert alert-success alert-dismissible fade show">{{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>  
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     @endif
 
     <div class="card">
@@ -21,29 +32,36 @@
                 <thead>
                     <tr>
                         <th>Nama Sampah</th>
+                        <th>Kategori</th>
                         <th>Harga per Kg</th>
-                        <th>Aksi</th>
+                        @can('isAdmin')
+                           <th>Aksi</th> 
+                        @endcan
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($sampahList as $sampah)
                         <tr>
                             <td>{{ $sampah->nama_sampah }}</td>
+                            <td>{{ $sampah->kategori }}</td>
                             <td>Rp {{ number_format($sampah->harga_per_kg, 0, ',', '.') }}</td>
+                            @can('isAdmin')
                             <td>
-                                <div class="btn-group" role="group">
-                                <button type="button" class="btn btn-sm btn-warning btn-aksi" data-bs-toggle="modal" data-bs-target="#editModal"
-                                        data-id="{{ $sampah->id }}"
-                                        data-nama="{{ $sampah->nama_sampah }}"
-                                        data-harga="{{ $sampah->harga_per_kg }}">
-                                    <i class="bi bi-pencil-square"></i> Edit
-                                </button>
-                                <button type="button" class="btn btn-sm btn-danger btn-aksi" data-bs-toggle="modal" data-bs-target="#hapusModal"
-                                        data-id="{{ $sampah->id }}">
-                                    <i class="bi bi-trash3"></i> Hapus
-                                </button>
-                                </div>
+                                    <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-warning btn-aksi" data-bs-toggle="modal" data-bs-target="#editModal"
+                                            data-id="{{ $sampah->id }}"
+                                            data-nama="{{ $sampah->nama_sampah }}"
+                                            data-kategori="{{ $sampah->kategori }}"
+                                            data-harga="{{ $sampah->harga_per_kg }}">
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger btn-aksi" data-bs-toggle="modal" data-bs-target="#hapusModal"
+                                            data-id="{{ $sampah->id }}">
+                                        <i class="bi bi-trash3"></i> Hapus
+                                    </button>
+                                    </div>  
                             </td>
+                             @endcan
                         </tr>
                     @empty
                         <tr>
@@ -74,6 +92,17 @@
                         <input type="text" class="form-control" name="nama_sampah" required>
                     </div>
                     <div class="mb-3">
+                        <label for="kategori" class="form-label">Kategori Sampah</label>
+                        <select name="kategori" class="form-select" required>
+                            <option value="">-- Pilih Kategori --</option>
+                            <option value="Plastik">Plastik (Botol, Gelas, Ember)</option>
+                            <option value="Kertas">Kertas (Kardus, HVS, Koran)</option>
+                            <option value="Logam">Logam (Besi, Kaleng, Tembaga)</option>
+                            <option value="Elektronik">Elektronik (E-Waste)</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
                         <label for="harga_per_kg" class="form-label">Harga per Kg</label>
                         <input type="number" class="form-control" name="harga_per_kg" required>
                     </div>
@@ -101,6 +130,17 @@
                     <div class="mb-3">
                         <label for="edit_nama_sampah" class="form-label">Nama Sampah</label>
                         <input type="text" class="form-control" id="edit_nama_sampah" name="nama_sampah" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="kategori" class="form-label">Kategori Sampah</label>
+                        <select name="kategori" class="form-select" required>
+                            <option value="">-- Pilih Kategori --</option>
+                            <option value="Plastik">Plastik (Botol, Gelas, Ember)</option>
+                            <option value="Kertas">Kertas (Kardus, HVS, Koran)</option>
+                            <option value="Logam">Logam (Besi, Kaleng, Tembaga)</option>
+                            <option value="Elektronik">Elektronik (E-Waste)</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label for="edit_harga_per_kg" class="form-label">Harga per Kg</label>
@@ -166,6 +206,8 @@
             const id = button.getAttribute('data-id');
             const form = hapusModal.querySelector('#hapusForm');
             form.action = `/manajemen-sampah/${id}`;
+
+            
         });
     }
 </script>

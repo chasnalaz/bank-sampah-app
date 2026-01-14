@@ -22,14 +22,22 @@
             </div>
             <hr class="sidebar-divider my-2">
             <div class="list-group list-group-flush my-3">
+                
+                {{-- 1. DASHBOARD (SEMUA Punya) --}}
                 <a href="{{ route('dashboard') }}" class="list-group-item list-group-item-action {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <i class="bi bi-speedometer2 me-2"></i> Dashboard
                 </a>
-                <a href="{{ route('nasabah.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('nasabah.index') ? 'active' : '' }}">
-                    <i class="bi bi-wallet2 me-2"></i> Catat Transaksi
-                </a>
+
+                {{-- 2. CATAT TRANSAKSI (HANYA Admin & Petugas) --}}
+                {{-- Kita pakai logika: Jika BUKAN Ketua, maka tampilkan --}}
+                @if(Auth::user()->role !== 'ketua')
+                    <a href="{{ route('nasabah.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('nasabah.index') ? 'active' : '' }}">
+                        <i class="bi bi-wallet2 me-2"></i> Catat Transaksi
+                    </a>
+                @endif
                 
-                @can('isAdmin')
+                {{-- 3. KELOLA DATA (Admin & Ketua) --}}
+                @can('isManajemen')
                     <a href="#kelolaDataSubmenu" data-bs-toggle="collapse" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                         <div><i class="bi bi-folder2-open me-2"></i> Kelola Data</div>
                         <i class="bi bi-chevron-down"></i>
@@ -52,22 +60,54 @@
                     </div>
                 @endcan
 
-                {{-- =========== BLOK PERUBAHAN ANDA DIMULAI DI SINI =========== --}}
-                @can('isAdmin')
-                    {{-- TAMPILAN MENU UNTUK ADMIN --}}
+                {{-- 4. PENJEMPUTAN SAMPAH (Logic Split) --}}
+                @can('isManajemen')
+                    {{-- ADMIN & KETUA: Melihat Monitoring (Global) --}}
                     <a href="{{ route('admin.penjemputan.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('admin.penjemputan.index') ? 'active' : '' }}">
-                        <i class="bi bi-basket me-2"></i> {{-- <-- IKON SUDAH DIGANTI --}}
-                        <span>Penjemputan Sampah</span>
+                        <i class="bi bi-basket me-2"></i>
+                        <span>Monitoring Penjemputan</span>
                     </a>
-                @else
-                    {{-- TAMPILAN MENU UNTUK PETUGAS --}}
+                @endcan
+
+                @if(Auth::user()->role == 'petugas')
+                    {{-- PETUGAS: Melihat Tugas Sendiri --}}
                     <a href="{{ route('penjemputan.tugas') }}" class="list-group-item list-group-item-action {{ request()->routeIs('penjemputan.tugas') ? 'active' : '' }}">
                         <i class="bi bi-truck me-2"></i>
                         <span>Tugas Penjemputan</span>
                     </a>
-                @endcan
-                {{-- =========== BLOK PERUBAHAN ANDA SELESAI DI SINI =========== --}}
+                @endif
+                
+                {{-- 5. AREA ADMIN & KETUA LAINNYA --}}
+                @can('isManajemen')
+                    <a href="{{ route('penjualan.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('penjualan.index') ? 'active' : '' }}">
+                        <i class="bi bi-cash-coin me-2"></i> Penjualan Sampah
+                    </a>
+                    
+                    {{-- Edukasi kita sembunyikan dari Ketua biar rapi, Cuma Admin yg urus konten --}}
+                    @can('isAdmin') 
+                        <a href="{{ route('admin.edukasi.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('admin.edukasi.index') ? 'active' : '' }}">
+                            <i class="bi bi-image me-2"></i> Kelola Edukasi
+                        </a>
+                    @endcan
 
+                    <a href="#AnalisisLaporanSubmenu" data-bs-toggle="collapse" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div><i class="bi bi-file-earmark-bar-graph me-2"></i> Analisis & Laporan</div>
+                        <i class="bi bi-chevron-down"></i>
+                    </a>
+                        <div class="collapse {{ request()->routeIs(['analisis.rekomendasi*', 'analisis.statistik*', 'laporan.transaksi*']) ? 'show' : '' }}" id="AnalisisLaporanSubmenu">
+                            <div class="sidebar-submenu">
+                                <a href="{{ route('analisis.rekomendasi') }}" class="list-group-item list-group-item-action {{ request()->routeIs('analisis.rekomendasi*') ? 'active' : '' }}">
+                                    <i class="bi bi-lightbulb me-2"></i> Rekomendasi
+                                </a>
+                                <a href="{{ route('analisis.statistik') }}" class="list-group-item list-group-item-action {{ request()->routeIs('analisis.statistik*') ? 'active' : '' }}">
+                                    <i class="bi bi-pie-chart me-2"></i> Analisis
+                                </a>
+                                <a href="{{ route('laporan.transaksi') }}" class="list-group-item list-group-item-action {{ request()->routeIs('laporan.transaksi*') ? 'active' : '' }}">
+                                    <i class="bi bi-file-earmark-text me-2"></i> Laporan Transaksi
+                                </a>
+                            </div>    
+                        </div>
+                @endcan
             </div>
         </aside>
 

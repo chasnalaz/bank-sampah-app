@@ -3,18 +3,44 @@
 @section('title', 'Permintaan Penjemputan')
 
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="fw-bold mb-0">Penjemputan</h4>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#formPenjemputanModal">
-            <i class="bi bi-plus-circle me-1"></i> Ajukan Permintaan
+    {{-- HEADER HALAMAN (DENGAN GARIS PEMISAH) --}}
+    {{-- pb-3 mb-4 border-bottom: Memberi jarak & garis bawah agar terpisah dari konten --}}
+    <div class="d-flex justify-content-between align-items-center pb-3 mb-4 border-bottom border-2">
+        <div>
+            <h4 class="fw-bold mb-0 text-dark">Penjemputan</h4>
+            <small class="text-muted" style="font-size: 0.8rem;">Request Penjemputan Sampah</small>
+        </div>
+        
+        {{-- TOMBOL SINGKAT & JELAS --}}
+        <button type="button" class="btn btn-primary btn-sm px-4 rounded-pill shadow-sm" 
+                data-bs-toggle="modal" data-bs-target="#formPenjemputanModal"
+                style="font-weight: 600;">
+            <i class="bi bi-plus-lg me-1"></i> Tambah
         </button>
     </div>
+
+    {{-- Alert Sukses (Tetap Sama) --}}
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show shadow-sm fs-6" role="alert">
+            <i class="bi bi-check-circle me-1"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+    
+    {{-- JUDUL SEKSI (DIPERJELAS) --}}
+    <div class="d-flex align-items-center mb-3">
+        <i class="bi bi-clock-history text-primary me-2"></i>
+        <h6 class="fw-bold mb-0 text-secondary">Riwayat Permintaan</h6>
+    </div>
+
+    {{-- LIST ITEM (LANJUT KE BAWAH TETAP SAMA...) --}}
+    <div class="list-group">
+        {{-- ... kodingan list kamu yang lama ... --}}
 
     @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
     
-    <h6 class="mb-3">Riwayat Permintaan Anda</h6>
     <div class="list-group">
         @forelse ($riwayatPenjemputan as $permintaan)
             <div class="list-group-item">

@@ -6,9 +6,11 @@
 <div class="container">
     {{-- Tombol Tambah --}}
     <div class="d-flex justify-content-end align-items-center mb-3">
+        @can('isAdmin')
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahModal">
             <i class="bi bi-plus-circle me-2"></i> Tambah Petugas Baru
         </button>
+        @endcan
     </div>
 
     {{-- Notifikasi --}}
@@ -25,7 +27,9 @@
                     <tr>
                         <th>Nama</th>
                         <th>Email</th>
-                        <th>Aksi</th>
+                        @can('isAdmin')
+                           <th>Aksi</th> 
+                        @endcan
                     </tr>
                 </thead>
                 <tbody>
@@ -33,6 +37,7 @@
                         <tr>
                             <td>{{ $petugas->name }}</td>
                             <td>{{ $petugas->email }}</td>
+                            @can('isAdmin')
                             <td>
                                 <div class="btn-group" role="group">
                                 <button type="button" class="btn btn-sm btn-warning btn-aksi" data-bs-toggle="modal" data-bs-target="#editModal"
@@ -47,6 +52,7 @@
                                 </button>
                                 </div>
                             </td>
+                            @endcan
                         </tr>
                     @empty
                         <tr>
