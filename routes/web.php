@@ -35,9 +35,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
      // NON-ADMIN ROUTES (ACCESSIBLE BY PETUGAS)
     Route::get('/nasabah', [NasabahController::class, 'index'])->name('nasabah.index');
     Route::post('/transaksi/setor', [TransaksiController::class, 'storeSetor'])->name('transaksi.storeSetor');
-    Route::post('/transaksi/tarik', [TransaksiController::class, 'storeTarik'])->name('transaksi.storeTarik');
-
-    // Rute untuk menampilkan halaman "Tugas Penjemputan" (dengan 3 Tab)
+    
     Route::get('/tugas-penjemputan', [PenjemputanController::class, 'index'])->name('penjemputan.tugas');
 
     // Rute-rute aksi penjemputan
