@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Dashboard Nasabah') - Bank Sampah Berseri Sejahtera</title>
+    <link rel="icon" href="{{ asset('img/logo.png') }}">
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
@@ -16,6 +17,33 @@
         }
         body {
             background-color: #f8f9fa;
+        }
+
+        .pagination {
+            justify-content: flex-end;
+            gap: 5px;
+        }
+        .page-item .page-link {
+            border: none;
+            border-radius: 8px;
+            color: #6c757d;
+            font-weight: 600;
+            padding: 8px 16px;
+            background-color: transparent;
+            transition: all 0.2s;
+        }
+        .page-item .page-link:hover {
+            background-color: #fff3cd;
+            color: #fd7e14;
+        }
+        .page-item.active .page-link {
+            background-color: #fd7e14;
+            color: #ffffff;
+            box-shadow: 0 4px 6px rgba(253, 126, 20, 0.3);
+        }
+        .page-item.disabled .page-link {
+            background-color: transparent;
+            color: #dee2e6;
         }
     </style>
 </head>

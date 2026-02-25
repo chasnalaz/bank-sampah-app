@@ -18,7 +18,8 @@ use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\EdukasiController;
 use App\Http\Controllers\PengaturanController;
 use App\Http\Controllers\NasabahProfileController;
-
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 Route::get('/', function () {
     return view('public.beranda'); 
@@ -32,10 +33,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::put('password', function (Illuminate\Http\Request $request) {
+        $validated = $request->validateWithBag('updatePassword', [
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', Password::defaults(), 'confirmed'],
+        ]);
+
+        $request->user()->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        return back()->with('success', 'Password berhasil diubah!');
+    })->name('password.update');
+
      // NON-ADMIN ROUTES (ACCESSIBLE BY PETUGAS)
     Route::get('/nasabah', [NasabahController::class, 'index'])->name('nasabah.index');
     Route::post('/transaksi/setor', [TransaksiController::class, 'storeSetor'])->name('transaksi.storeSetor');
-    
+    Route::post('/transaksi/tarik', [TransaksiController::class, 'storeTarik'])->name('transaksi.storeTarik');
+
     Route::get('/tugas-penjemputan', [PenjemputanController::class, 'index'])->name('penjemputan.tugas');
 
     // Rute-rute aksi penjemputan
@@ -48,7 +63,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ====================================================
     // AREA MANAJEMEN (ADMIN & KETUA BISA MASUK)
     // ====================================================
-    // Kita pakai 'can:isManajemen' agar Ketua bisa lihat-lihat data
     Route::middleware(['can:isManajemen'])->group(function () {
         
         // 1. MANAJEMEN NASABAH (READ)
@@ -75,16 +89,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/laporan/transaksi/cetak', [LaporanController::class, 'cetakTransaksi'])->name('laporan.transaksi.cetak');
         Route::get('/transaksi/struk/{id}', [TransaksiController::class, 'cetakStruk'])->name('transaksi.struk');
         Route::get('/penjualan/struk/{id}', [PenjualanController::class, 'cetakStruk'])->name('penjualan.struk');
-
+        Route::get('/laporan/transaksi', [TransaksiController::class, 'laporan'])->name('laporan.transaksi');
 
         // ====================================================
         // AREA "BERBAHAYA" (KHUSUS ADMIN SANG EKSEKUTOR)
         // ====================================================
-        // Di sini kita kunci lagi pintunya. Cuma Admin yang boleh Edit/Hapus/Simpan.
         Route::middleware(['can:isAdmin'])->group(function () {
             
-            // Pengaturan Toko
-            Route::put('/pengaturan', [PengaturanController::class, 'update'])->name('pengaturan.update');
+            Route::put('/pengaturan/update', [DashboardController::class, 'updatePengaturan'])->name('pengaturan.update');
 
             // Aksi Nasabah (CUD)
             Route::post('/manajemen-nasabah', [NasabahController::class, 'store'])->name('nasabah.store');
@@ -133,10 +145,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/nasabah/penjemputan', [NasabahDashboardController::class, 'showPenjemputan'])->name('nasabah.penjemputan');
             Route::post('/nasabah/penjemputan', [NasabahDashboardController::class, 'storePenjemputan'])->name('nasabah.penjemputan.store');
 
+            // Route untuk halaman daftar semua edukasi
+            Route::get('/nasabah/edukasi', [NasabahDashboardController::class, 'edukasiIndex'])->name('edukasi.index');
+            
             Route::get('/nasabah/riwayat', [NasabahDashboardController::class, 'riwayat'])->name('nasabah.riwayat');
             
             // FITUR PROFIL
             Route::get('/nasabah/profil', [NasabahProfileController::class, 'index'])->name('nasabah.profil');
             Route::put('/nasabah/profil', [NasabahProfileController::class, 'update'])->name('nasabah.profil.update');
             });
+
 require __DIR__.'/auth.php';

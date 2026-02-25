@@ -12,7 +12,7 @@
     <div class="row">
         {{-- KARTU 1: BIODATA NASABAH --}}
         <div class="col-md-4 mb-4">
-            <div class="card shadow border-left-primary h-100">
+            <div class="card shadow h-100">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0"><i class="bi bi-person-circle me-2"></i>Profil Nasabah</h5>
                 </div>
@@ -78,7 +78,10 @@
                                         </td>
                                         <td>
                                             @if($trx->jenis_transaksi == 'setor')
-                                                {{ $trx->jenis_sampah }} ({{ $trx->berat }} kg)
+                                                {{-- PERBAIKAN DI SINI: Gunakan relasi jenisSampah --}}
+                                                <span class="fw-bold">{{ $trx->jenisSampah->nama_sampah ?? 'Jenis Tak Dikenal' }}</span> 
+                                                <br>
+                                                <small class="text-muted">({{ $trx->berat }} kg)</small>
                                             @else
                                                 Penarikan Tunai
                                             @endif

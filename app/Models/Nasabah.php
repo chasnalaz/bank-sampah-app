@@ -20,5 +20,6 @@ class Nasabah extends Authenticatable
         'alamat',
         'telepon',
         'saldo',
+        'password',
     ];
 }

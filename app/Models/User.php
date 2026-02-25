@@ -21,6 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'telepon',
+        'alamat',
         'status_tugas'
     ];
 
@@ -45,5 +47,27 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // --- TAMBAHAN RELASI (Hubungan Antar Tabel) ---
+
+    // 1. Seorang Petugas (User) bisa melayani BANYAK Transaksi
+    public function transaksis()
+    {
+        // Pastikan 'petugas_id' sesuai dengan nama kolom di tabel transaksis
+        return $this->hasMany(Transaksi::class, 'petugas_id');
+    }
+
+    // 2. Seorang Petugas (User) punya BANYAK Riwayat Absensi
+    public function absensis()
+    {
+        return $this->hasMany(Absensi::class);
+    }
+
+    // Di file User.php
+    public function nasabah()
+    {
+        // Asumsi: tabel nasabahs punya kolom user_id
+        return $this->hasOne(Nasabah::class); 
     }
 }

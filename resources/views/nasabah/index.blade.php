@@ -38,11 +38,29 @@
     </div>
     @endif
 
-    {{-- Search Bar --}}
-    <div class="input-group input-group-lg mb-4">
-        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-        <input type="text" class="form-control border-start-0 ps-0" placeholder="Cari nama nasabah...">
-    </div>
+    {{-- Search Bar (Sudah Berfungsi) --}}
+    <form action="{{ route('nasabah.index') }}" method="GET" class="mb-4">
+        <div class="input-group input-group-lg shadow-sm">
+            <span class="input-group-text bg-white border-end-0 text-muted">
+                <i class="bi bi-search"></i>
+            </span>
+            {{-- Input name="cari" harus sama dengan di Controller --}}
+            <input type="text" 
+                   name="cari" 
+                   class="form-control border-start-0 ps-0" 
+                   placeholder="Cari nama nasabah..." 
+                   value="{{ request('cari') }}" 
+                   autocomplete="off">
+                   
+            {{-- Tombol Cari / Reset --}}
+            @if(request('cari'))
+                <a href="{{ route('nasabah.index') }}" class="btn btn-outline-secondary border-start-0" title="Reset">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            @endif
+            <button class="btn btn-primary px-4" type="submit">Cari</button>
+        </div>
+    </form>
 
     {{-- Daftar Nasabah --}}
     <div class="d-grid gap-3">
@@ -79,6 +97,11 @@
                 </div>
             </div>
         @endforeach
+    </div>
+
+    {{-- PAGINATION --}}
+    <div class="d-flex justify-content-end p-3">
+        {{ $nasabahList->links() }}
     </div>
 </div>
 @endsection

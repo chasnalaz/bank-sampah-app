@@ -9,19 +9,39 @@ use Illuminate\Http\Request;
 
 class PenjualanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Ambil data penjualan untuk tabel riwayat
-        $penjualans = Penjualan::with(['tengkulak', 'jenisSampah'])
-                        ->latest('tanggal_jual')
-                        ->get();
+        // 1. Ambil Filter dari Request (Bisa kosong)
+        $bulan = $request->input('bulan');
+        $tahun = $request->input('tahun');
 
-        // Data pendukung untuk Modal (Kita kirim semua data mentahnya)
-        // Kita load relasi jenisSampah agar nanti di Javascript bisa tampil namanya jika perlu
+        // 2. Query Dasar
+        $query = Penjualan::with(['tengkulak', 'jenisSampah']);
+
+        // 3. Terapkan Filter jika ada input
+        if ($bulan) {
+            $query->whereMonth('tanggal_jual', $bulan);
+        }
+        if ($tahun) {
+            $query->whereYear('tanggal_jual', $tahun);
+        }
+
+        // 4. Ambil Data (Gunakan paginate biar tabel tidak kepanjangan)
+        $penjualans = $query->latest('tanggal_jual')
+                            ->paginate(10)
+                            ->withQueryString();
+
+        // 5. Data Pendukung Modal (SAMA SEPERTI KODEMU SEBELUMNYA)
         $tengkulakList = Tengkulak::with('jenisSampah')->get(); 
         $jenisSampahList = JenisSampah::all();
 
-        return view('admin.penjualan.index', compact('penjualans', 'tengkulakList', 'jenisSampahList'));
+        return view('admin.penjualan.index', compact(
+            'penjualans', 
+            'tengkulakList', 
+            'jenisSampahList',
+            'bulan', 
+            'tahun'
+        ));
     }
 
     public function store(Request $request)

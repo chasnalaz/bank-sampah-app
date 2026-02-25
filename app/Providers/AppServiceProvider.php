@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Schema; // Import Schema (Solusi Error P1009)
 use App\Models\Pengaturan;             // Import Model Pengaturan
 use Illuminate\Support\Facades\Gate;
 use App\Models\Penjemputan;
+use Illuminate\Pagination\Paginator; // <--- TAMBAHAN 1: Tambahkan ini di paling atas
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +25,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // <--- TAMBAHAN 2: Tambahkan baris ini di paling awal fungsi boot()
+        // Ini perintah agar panah pagination pakai gaya Bootstrap (kecil), bukan Tailwind (raksasa)
+        Paginator::useBootstrapFive(); 
+
+
+        // --- DI BAWAH INI ADALAH KODE LAMA KAMU (JANGAN DIHAPUS) ---
+        // PENCEGAHAN ERROR: Cek dulu apakah tabel 'pengaturans' sudah ada?
+        if (Schema::hasTable('pengaturans')) {
+             // ... kode lama kamu ...
+             View::composer('*', function ($view) {
+                // ...
+             });
+        }
         // PENCEGAHAN ERROR: Cek dulu apakah tabel 'pengaturans' sudah ada?
         // (Ini mencegah error saat pertama kali jalankan 'php artisan migrate')
         

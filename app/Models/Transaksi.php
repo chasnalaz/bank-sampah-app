@@ -16,15 +16,16 @@ class Transaksi extends Model
      */
     protected $fillable = [
         'nasabah_id',
+        'petugas_id', // <--- WAJIB ADA: Agar ID petugas bisa disimpan
         'tanggal_transaksi',
         'jenis_transaksi',
         'total_harga',
-        'jenis_sampah', // Ini kemungkinan Foreign Key ke tabel jenis_sampahs
-        'berat',        // Perhatikan nama kolom ini (nanti harus disesuaikan di controller)
+        'jenis_sampah',
+        'berat',
     ];
 
     // ==========================================
-    // TAMBAHKAN DUA FUNGSI RELASI DI BAWAH INI
+    // RELASI TABEL
     // ==========================================
 
     /**
@@ -36,11 +37,21 @@ class Transaksi extends Model
     }
 
     /**
+     * Relasi: Transaksi dicatat oleh satu User (Petugas)
+     * PENTING: Ini agar fitur Analisis Kinerja Petugas berjalan!
+     */
+    public function petugas()
+    {
+        return $this->belongsTo(User::class, 'petugas_id');
+    }
+
+    /**
      * Relasi: Transaksi memiliki satu Jenis Sampah
      */
+
+    // Relasi ke Jenis Sampah (Baru)
     public function jenisSampah()
     {
-        // Kita asumsikan kolom 'jenis_sampah' di tabel transaksis menyimpan ID jenis sampah
-        return $this->belongsTo(JenisSampah::class, 'jenis_sampah');
+        return $this->belongsTo(JenisSampah::class, 'jenis_sampah_id');
     }
 }

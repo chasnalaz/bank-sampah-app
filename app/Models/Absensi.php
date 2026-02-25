@@ -5,14 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Pengaturan extends Model
+class Absensi extends Model
 {
     use HasFactory;
-    
-    protected $fillable = ['key', 'value'];
 
+    protected $fillable = ['user_id', 'status'];
+
+    // Relasi ke User (biar tahu ini absennya siapa)
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class);
     }
 }

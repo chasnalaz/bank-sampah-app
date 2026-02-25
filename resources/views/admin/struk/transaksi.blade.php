@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Struk Transaksi #{{ $transaksi->id }}</title>
+    <link rel="icon" href="{{ asset('img/logo.png') }}">
     <style>
         body { font-family: 'Courier New', monospace; font-size: 12px; max-width: 300px; margin: 0 auto; padding: 10px; }
         .header { text-align: center; margin-bottom: 10px; }

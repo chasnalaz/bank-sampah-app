@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\JenisSampah;
+use App\Models\RiwayatHarga;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class JenisSampahController extends Controller
 {
@@ -37,8 +39,25 @@ class JenisSampahController extends Controller
             'harga_per_kg' => 'required|integer|min:0',
         ]);
 
+        // --- LOGIKA BARU: CEK PERUBAHAN HARGA ---
+        // Kita cek, apakah harga yg diinput admin (request) BEDA dengan harga di database (jenisSampah)?
+        if ($request->harga_per_kg != $jenisSampah->harga_per_kg) {
+            
+            // Kalau beda, kita CATAT dulu ke buku sejarah (tabel riwayat_hargas)
+            RiwayatHarga::create([
+                'jenis_sampah_id' => $jenisSampah->id,
+                'harga_lama'      => $jenisSampah->harga_per_kg, // Ambil harga lama
+                'harga_baru'      => $request->harga_per_kg,     // Ambil harga baru
+                'user_id'         => Auth::id(),                 // Siapa pelakunya?
+            ]);
+        }
+        // ----------------------------------------
+
+        // Lanjut update data master seperti biasa
         $jenisSampah->update($validated);
-        return redirect()->route('sampah.manajemen')->with('success', 'Data sampah berhasil diperbarui!');
+
+        return redirect()->route('sampah.manajemen')
+                         ->with('success', 'Data sampah & harga berhasil diperbarui!');
     }
 
     // Menghapus data sampah

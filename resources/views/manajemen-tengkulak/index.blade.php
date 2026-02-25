@@ -30,7 +30,7 @@
                             <th>Harga Beli</th>
                             <th>Kontak</th>
                             @can('isAdmin')
-                                <th>Aksi</th>
+                                <th class="text-center">Aksi</th>
                             @endcan
                         </tr>
                     </thead>
@@ -43,20 +43,20 @@
                                 <td>{{ $tengkulak->kontak ?? '-' }}</td>
                                 @can('isAdmin')
                                     <td>
-                                        <div class="btn-group" role="group">
-                                            <button type="button" class="btn btn-sm btn-warning btn-aksi" 
+                                        <div class="d-flex justify-content-center gap-1">
+                                            <button type="button" class="btn btn-sm btn-warning text-white btn-aksi" 
                                                     data-bs-toggle="modal" data-bs-target="#editModal"
                                                     data-id="{{ $tengkulak->id }}"
                                                     data-nama="{{ $tengkulak->nama_tengkulak }}"
                                                     data-sampah="{{ $tengkulak->jenis_sampah_id }}"
                                                     data-harga="{{ $tengkulak->harga_beli }}"
                                                     data-kontak="{{ $tengkulak->kontak }}">
-                                                <i class="bi bi-pencil-square"></i> Edit
+                                                <i class="bi bi-pencil-square me-1"></i>Edit
                                             </button>
                                             <button type="button" class="btn btn-sm btn-danger btn-aksi" 
                                                     data-bs-toggle="modal" data-bs-target="#hapusModal"
                                                     data-id="{{ $tengkulak->id }}">
-                                                <i class="bi bi-trash3"></i> Hapus
+                                                <i class="bi bi-trash3 me-1"></i>Hapus
                                             </button>
                                         </div>
                                     </td>

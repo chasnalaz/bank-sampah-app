@@ -35,7 +35,7 @@
                         <th>Kategori</th>
                         <th>Harga per Kg</th>
                         @can('isAdmin')
-                           <th>Aksi</th> 
+                           <th class="text-center">Aksi</th> 
                         @endcan
                     </tr>
                 </thead>
@@ -47,17 +47,17 @@
                             <td>Rp {{ number_format($sampah->harga_per_kg, 0, ',', '.') }}</td>
                             @can('isAdmin')
                             <td>
-                                    <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-sm btn-warning btn-aksi" data-bs-toggle="modal" data-bs-target="#editModal"
+                                    <div class="d-flex justify-content-center gap-1">
+                                    <button type="button" class="btn btn-sm btn-warning text-white btn-aksi" data-bs-toggle="modal" data-bs-target="#editModal"
                                             data-id="{{ $sampah->id }}"
                                             data-nama="{{ $sampah->nama_sampah }}"
                                             data-kategori="{{ $sampah->kategori }}"
                                             data-harga="{{ $sampah->harga_per_kg }}">
-                                        <i class="bi bi-pencil-square"></i> Edit
+                                        <i class="bi bi-pencil-square me-1"></i>Edit
                                     </button>
                                     <button type="button" class="btn btn-sm btn-danger btn-aksi" data-bs-toggle="modal" data-bs-target="#hapusModal"
                                             data-id="{{ $sampah->id }}">
-                                        <i class="bi bi-trash3"></i> Hapus
+                                        <i class="bi bi-trash3 me-1"></i>Hapus
                                     </button>
                                     </div>  
                             </td>
@@ -99,6 +99,7 @@
                             <option value="Kertas">Kertas (Kardus, HVS, Koran)</option>
                             <option value="Logam">Logam (Besi, Kaleng, Tembaga)</option>
                             <option value="Elektronik">Elektronik (E-Waste)</option>
+                            <option value="Minyak Jelantah">Minyak Jelantah</option>
                             <option value="Lainnya">Lainnya</option>
                         </select>
                     </div>
@@ -139,6 +140,7 @@
                             <option value="Kertas">Kertas (Kardus, HVS, Koran)</option>
                             <option value="Logam">Logam (Besi, Kaleng, Tembaga)</option>
                             <option value="Elektronik">Elektronik (E-Waste)</option>
+                            <option value="Minyak Jelantah">Minyak Jelantah</option>
                             <option value="Lainnya">Lainnya</option>
                         </select>
                     </div>

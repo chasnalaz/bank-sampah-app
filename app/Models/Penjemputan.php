@@ -12,14 +12,16 @@ class Penjemputan extends Model
 
     protected $fillable = [
         'nasabah_id',
-        'alamat_penjemputan',
-        'usulan_tanggal',
+        'petugas_id',
         'status',
+        
+        // Pastikan nama-nama ini sesuai dengan yang ada di Controller & Database kamu:
+        'alamat_penjemputan', // atau 'alamat_jemput' (cek struktur tabelmu!)
+        'usulan_tanggal',
         'jenis_sampah_id',
         'estimasi_berat',
         'catatan_nasabah',
     ];
-
     // --- TAMBAHKAN FUNGSI INI DI BAWAH ---
     
     /**

@@ -30,39 +30,43 @@
     @endif
 
 
-    <div class="card">
-        <div class="card-body">
-            
-            <ul class="nav nav-pills mb-3" id="penjemputanTab" role="tablist">
-                {{-- ... (Nav Tabs tidak berubah) ... --}}
+    <div class="card shadow-sm">
+        <div class="card-header py-3">
+            <ul class="nav nav-tabs card-header-tabs" id="penjemputanTab" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="baru-tab" data-bs-toggle="tab" data-bs-target="#permintaan-baru" type="button" role="tab" aria-controls="permintaan-baru" aria-selected="true">
-                        Permintaan Baru
+                    <button class="nav-link active fw-bold text-dark" id="baru-tab" data-bs-toggle="tab" data-bs-target="#permintaan-baru" type="button" role="tab" aria-controls="permintaan-baru" aria-selected="true">
+                        <i class="bi bi-bell me-2"></i>Permintaan Baru
                         @if ($permintaanBaruList->count() > 0)
-                            <span class="badge bg-danger rounded-pill">{{ $permintaanBaruList->count() }}</span>
+                            <span class="badge bg-danger rounded-pill ms-1">{{ $permintaanBaruList->count() }}</span>
                         @endif
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="aktif-tab" data-bs-toggle="tab" data-bs-target="#tugas-aktif" type="button" role="tab" aria-controls="tugas-aktif" aria-selected="false">
-                        Tugas Aktif Saya
+                    <button class="nav-link fw-bold text-dark" id="aktif-tab" data-bs-toggle="tab" data-bs-target="#tugas-aktif" type="button" role="tab" aria-controls="tugas-aktif" aria-selected="false">
+                        <i class="bi bi-clock-history me-2"></i>Tugas Aktif Saya
+                        @if ($tugasAktifList->count() > 0)
+                            <span class="badge bg-danger rounded-pill ms-1">{{ $tugasAktifList->count() }}</span>
+                        @endif
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="riwayat-tab" data-bs-toggle="tab" data-bs-target="#riwayat-selesai" type="button" role="tab" aria-controls="riwayat-selesai" aria-selected="false">
-                        Riwayat Tugas Saya
+                    <button class="nav-link fw-bold text-dark" id="riwayat-tab" data-bs-toggle="tab" data-bs-target="#riwayat-selesai" type="button" role="tab" aria-controls="riwayat-selesai" aria-selected="false">
+                        <i class="bi bi-check-circle me-2"></i>Riwayat Tugas Saya
                     </button>
                 </li>
             </ul>
+        </div>
+
+        <div class="card-body">
 
             <div class="tab-content" id="penjemputanTabContent">
                 
                 {{-- KONTEN TAB 1: PERMINTAAN BARU --}}
                 <div class="tab-pane fade show active" id="permintaan-baru" role="tabpanel" aria-labelledby="baru-tab" tabindex="0">
+                    <h6 class="mb-3 text-muted small text-uppercase">Daftar Permintaan Penjemputan Baru</h6>
                     <div class="table-responsive">
-                        <table class="table table-hover">
-                            {{-- ... (thead tidak berubah) ... --}}
-                            <thead>
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
                                 <tr>
                                     <th>Nasabah</th>
                                     <th>Usulan Tgl.</th>
@@ -103,10 +107,10 @@
 
                 {{-- KONTEN TAB 2: TUGAS AKTIF SAYA --}}
                 <div class="tab-pane fade" id="tugas-aktif" role="tabpanel" aria-labelledby="aktif-tab" tabindex="0">
+                    <h6 class="mb-3 text-muted small text-uppercase">Tugas Penjemputan Aktif Saya</h6>
                     <div class="table-responsive">
-                        <table class="table table-hover">
-                            {{-- ... (thead tidak berubah) ... --}}
-                            <thead>
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
                                 <tr>
                                     <th>Nasabah</th>
                                     <th>Usulan Tgl.</th>
@@ -155,7 +159,46 @@
 
                 {{-- KONTEN TAB 3: RIWAYAT TUGAS SAYA --}}
                 <div class="tab-pane fade" id="riwayat-selesai" role="tabpanel" aria-labelledby="riwayat-tab" tabindex="0">
-                    {{-- ... (Tidak ada perubahan di Tab 3) ... --}}
+                    <h6 class="mb-3 text-muted small text-uppercase">Riwayat Tugas Penjemputan Selesai</h6>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nasabah</th>
+                                    <th>Tgl. Selesai</th>
+                                    <th>Alamat</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($riwayatSelesaiList as $riwayat)
+                                    <tr>
+                                        <td class="fw-bold">{{ $riwayat->nasabah->nama }}</td>
+                                        <td>
+                                            {{ \Carbon\Carbon::parse($riwayat->updated_at)->translatedFormat('d F Y') }}<br>
+                                            <small class="text-muted">{{ \Carbon\Carbon::parse($riwayat->updated_at)->format('H:i') }} WIB</small>
+                                        </td>
+                                        <td>{{ $riwayat->alamat_penjemputan }}</td>
+                                        <td>
+                                            <span class="badge bg-success rounded-pill">
+                                                <i class="bi bi-check-circle-fill me-1"></i> Selesai
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    {{-- INI PESAN KALO KOSONG --}}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-5 text-muted">
+                                            <div class="mb-2">
+                                                <i class="bi bi-clipboard-check fs-1 text-secondary opacity-50"></i>
+                                            </div>
+                                            Anda belum memiliki riwayat tugas yang selesai.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
             </div>

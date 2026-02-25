@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title') - Bank Sampah Berseri Sejahtera</title>
+    <link rel="icon" href="{{ asset('img/logo.png') }}">
     
     {{-- Aset (Font, Ikon, CSS) --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">

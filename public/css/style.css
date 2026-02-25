@@ -151,6 +151,43 @@ hr.sidebar-divider {
     background-color: rgb(var(--bs-primary-rgb)); /* Latar belakang ORANYE */
 }
 
+/*
+|--------------------------------------------------------------------------
+| Kustomisasi Pagination (Seragam dengan Manajemen Nasabah)
+|--------------------------------------------------------------------------
+*/
+
+.pagination {
+    justify-content: flex-end;
+    gap: 5px;
+}
+
+.page-item .page-link {
+    border: none;
+    border-radius: 8px;
+    color: #6c757d;
+    font-weight: 600;
+    padding: 8px 16px;
+    background-color: transparent;
+    transition: all 0.2s;
+}
+
+.page-item .page-link:hover {
+    background-color: #fff3cd;
+    color: #fd7e14;
+}
+
+.page-item.active .page-link {
+    background-color: #fd7e14;
+    color: #ffffff;
+    box-shadow: 0 4px 6px rgba(253, 126, 20, 0.3);
+}
+
+.page-item.disabled .page-link {
+    background-color: transparent;
+    color: #dee2e6;
+}
+
 /* CSS untuk Halaman Welcome */
 body.welcome-page {
     font-family: 'Poppins', sans-serif;

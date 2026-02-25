@@ -3,13 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Nasabah;
-use App\Models\Transaksi; // <--- Pastikan ini ada
+use App\Models\Transaksi;
 use App\Models\JenisSampah;
 use App\Models\Penjemputan;
 use App\Models\User;
+use App\Models\Pengaturan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon; // <--- Pastikan ini ada
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -17,51 +19,85 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // 1. LOGIKA ADMIN & KETUA
         if ($user->role == 'admin' || $user->role == 'ketua') {
             
-            $jumlahNasabah = Nasabah::count();
+            $jemputanPending = Penjemputan::where('status', 'Menunggu Konfirmasi')
+                                          ->whereNull('petugas_id')
+                                          ->count();
+
             $totalSaldo = Nasabah::sum('saldo');
-            
-            $jumlahSetoran = Transaksi::where('jenis_transaksi', 'setor')->count();
-            $jumlahPenarikan = Transaksi::where('jenis_transaksi', 'tarik')->count();
 
-            // Hitung Petugas Siap Hari Ini
-            $jumlahPetugas = User::where('role', 'petugas')
-                                 ->where('status_tugas', 'siap')
-                                 ->whereDate('updated_at', Carbon::today())
-                                 ->count();
-
-            $permintaanBaru = Penjemputan::where('status', 'Menunggu Konfirmasi')->count();
-            $tugasBerlangsung = Penjemputan::where('status', 'Diterima')->count();
+            // --- [INI BAGIAN YANG KITA TAMBAHKAN] ---
             
+            // 1. Hitung Berat Bulan Ini (Untuk Angka Utama)
+            $totalBeratBulanIni = Transaksi::where('jenis_transaksi', 'setor')
+                                           ->whereMonth('created_at', Carbon::now()->month)
+                                           ->whereYear('created_at', Carbon::now()->year)
+                                           ->sum('berat');
+
+            // 2. Hitung Berat Selamanya (Untuk Info Kecil di Bawah)
+            $totalBeratAllTime = Transaksi::where('jenis_transaksi', 'setor')->sum('berat');
+            
+            // Kita pakai variabel ini untuk kompatibilitas jika ada view lama yg pakai $totalBerat
+            $totalBerat = $totalBeratAllTime; 
+
+            // ----------------------------------------
+
+            $petugasHadir = User::where('role', 'petugas')
+                                ->where('status_tugas', 'siap')
+                                ->whereDate('updated_at', Carbon::today())
+                                ->count();
+
+            $totalPetugas = User::where('role', 'petugas')->count();
+
+            $dataKomposisi = DB::table('transaksis')
+                ->join('jenis_sampahs', 'transaksis.jenis_sampah_id', '=', 'jenis_sampahs.id')
+                ->select('jenis_sampahs.nama_sampah as jenis_sampah', DB::raw('SUM(transaksis.berat) as total_berat'))
+                ->where('transaksis.jenis_transaksi', 'setor')
+                ->groupBy('jenis_sampahs.nama_sampah')
+                ->orderByDesc('total_berat')
+                ->limit(5)
+                ->get();
+            
+            $chartLabels = $dataKomposisi->pluck('jenis_sampah');
+            $chartValues = $dataKomposisi->pluck('total_berat');
+
+            $tglBuka  = Pengaturan::where('key', 'tanggal_buka')->value('value');
+            $jamBuka  = Pengaturan::where('key', 'jam_buka')->value('value') ?? '08:00';
+            $jamTutup = Pengaturan::where('key', 'jam_tutup')->value('value') ?? '16:00';
+
             return view('dashboard', [
-                'jumlahNasabah' => $jumlahNasabah,
-                'totalSaldo' => $totalSaldo,
-                'jumlahSetoran' => $jumlahSetoran,
-                'jumlahPenarikan' => $jumlahPenarikan,
-                'jumlahPetugas' => $jumlahPetugas,
-                'permintaanBaru' => $permintaanBaru,
-                'tugasBerlangsung' => $tugasBerlangsung,
+                'jemputanPending' => $jemputanPending,
+                'totalSaldo'      => $totalSaldo,
+                
+                // JANGAN LUPA DITAMBAHKAN DI SINI JUGA:
+                'totalBerat'          => $totalBerat, 
+                'totalBeratBulanIni'  => $totalBeratBulanIni, // <--- INI OBATNYA
+                'totalBeratAllTime'   => $totalBeratAllTime,  // <--- INI JUGA
+
+                'petugasHadir'    => $petugasHadir,
+                'totalPetugas' => $totalPetugas,
+                'chartLabels'     => $chartLabels,
+                'chartValues'     => $chartValues,
+                'tglBuka'         => $tglBuka,
+                'jamBuka'         => $jamBuka,
+                'jamTutup'        => $jamTutup,
             ]);
 
         } else {
-            // 2. LOGIKA PETUGAS (ELSE)
+            // --- LOGIKA PETUGAS (TIDAK BERUBAH) ---
             
-            // A. Logika Reset Status Absen (Auto-Reset)
             if ($user->status_tugas == 'siap' && !$user->updated_at->isToday()) {
                 $user->status_tugas = 'izin';
                 $user->save();
                 $user = $user->fresh(); 
             }
 
-            // B. Hitung Data Tugas
             $permintaanBaruCount = Penjemputan::where('status', 'Menunggu Konfirmasi')->count();
             $tugasAktifCount = Penjemputan::where('petugas_id', $user->id)
                                         ->where('status', 'Diterima')
                                         ->count();
 
-            // C. Hitung Kinerja Hari Ini (YANG TADINYA ERROR)
             $totalBeratHariIni = Transaksi::where('petugas_id', $user->id)
                                           ->whereDate('created_at', Carbon::today())
                                           ->sum('berat'); 
@@ -73,14 +109,39 @@ class DashboardController extends Controller
 
             $daftarHargaSampah = JenisSampah::orderBy('nama_sampah', 'asc')->get(); 
             
-            // D. Kirim ke View
             return view('dashboard-petugas', [
                 'permintaanBaruCount' => $permintaanBaruCount,
-                'tugasAktifCount' => $tugasAktifCount,
-                'daftarHargaSampah' => $daftarHargaSampah,
-                'totalBeratHariIni' => $totalBeratHariIni, // <--- Sudah ditambahkan
-                'totalUangHariIni' => $totalUangHariIni    // <--- Sudah ditambahkan
+                'tugasAktifCount'     => $tugasAktifCount,
+                'daftarHargaSampah'   => $daftarHargaSampah,
+                'totalBeratHariIni'   => $totalBeratHariIni, 
+                'totalUangHariIni'    => $totalUangHariIni   
             ]);
         }
+    }
+
+    public function updatePengaturan(Request $request)
+    {
+        $request->validate([
+            'tanggal_buka' => 'required|date',
+            'jam_buka'     => 'required',
+            'jam_tutup'    => 'required',
+        ]);
+
+        Pengaturan::updateOrCreate(
+            ['key' => 'tanggal_buka'],
+            ['value' => $request->tanggal_buka, 'user_id' => Auth::id()]
+        );
+
+        Pengaturan::updateOrCreate(
+            ['key' => 'jam_buka'],
+            ['value' => $request->jam_buka, 'user_id' => Auth::id()]
+        );
+
+        Pengaturan::updateOrCreate(
+            ['key' => 'jam_tutup'],
+            ['value' => $request->jam_tutup, 'user_id' => Auth::id()]
+        );
+
+        return redirect()->back()->with('success', 'Jadwal Berhasil Disimpan!');
     }
 }
